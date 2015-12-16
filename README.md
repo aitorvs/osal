@@ -6,7 +6,18 @@ This project offers a reacher API and support for specific hardware used at the 
 
 Dependencies:
 
-- ...
+* The GNU assembler linker and binary utils, binutils v2.10
+* The GNU compiler, GCC v4.4.1.2-9
+* The GNU C cross-compiler, sparc-rtems-gcc GCC v3.3.2
+* The RTEMS real-time operating system v4.6.5
+* The GNU make utility, v3.81
+* The Qmake utility, v2.01a (Qt 4.3.2)
+* The shared libraries for terminal handling (ncurses)
+  - libncurses5, v5.6
+  - libncursesw5, v5.6
+  - ncurses-base, v5.6
+  - ncurses-bin, v5.6
+
 
 ## Installation
 
