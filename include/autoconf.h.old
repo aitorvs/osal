@@ -1,0 +1,21 @@
+/* Automatically generated, don't edit */
+/* Generated on: rodano */
+/* At: Wed, 13 Aug 2008 15:00:55 +0000 */
+/* Linux version 2.6.22-14-generic (buildd@palmer) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #1 SMP Sun Oct 14 23:05:12 GMT 2007 */
+
+/* OS Abstraction Layer */
+
+/* Operating System Configuration */
+#undef  CONFIG_OS_WARNING_CONSOLE_ON
+#undef  CONFIG_OS_ERROR_CONSOLE_ON
+#undef  CONFIG_OS_STATIC_RESOURCE_ALLOCATION
+#undef  CONFIG_OS_ENABLE_FILESYSTEM
+#define CONFIG_MAX_NUMBER_OF_TASKS 20
+#define CONFIG_MAX_NUMBER_OF_SEMAPHORES 20
+#define CONFIG_MAX_NUMBER_OF_MUTEX 40
+#define CONFIG_MAX_NUMBER_OF_QUEUES 20
+#define CONFIG_MAX_NUMBER_OF_TIMERS 5
+
+
+/* That's all, folks! */
+#define AUTOCONF_INCLUDED

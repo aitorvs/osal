@@ -1,0 +1,3026 @@
+------------------------------------------------------------
+revno: 48 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: trunk
+timestamp: Tue 2010-11-30 13:20:04 +0100
+message:
+  - All funcions return 0 or -1 and set os_errno
+  - Added G_STATUS_EERR
+  - G_STATUS_ERROR is -1 value to keep Scisys compatibility
+  - Try another network configu and see if it works for Scisys
+  
+  added:
+    include/osal/osal.h
+    src/common/oserrno.c
+  renamed:
+    src/arch/sparc/common/rtems/rtems-network.c => src/arch/sparc/common/rtems/rtems-network.c.bak
+    src/arch/sparc/common/rtems/rtems4.10-network.c => src/arch/sparc/common/rtems/rasta-rtems4.8/networkconfig.h
+  modified:
+    Doxyfile
+    config/config_leon3_rasta_rtems.cfg
+    config/config_leon3_rasta_rtems_dbg.cfg
+    defs.mk
+    include/osal/oscore.h
+    include/osal/oserr.h
+    include/osal/oshwcore.h
+    include/osal/osint.h
+    include/osal/osmut.h
+    include/osal/ospool.h
+    include/osal/osqueue.h
+    include/osal/ossem.h
+    include/osal/ostask.h
+    include/osal/ostime.h
+    include/osal/ostimer.h
+    include/osal/ostypes.h
+    include/osal/osutils.h
+    samples/core/queue.c
+    samples/core/task_monotonic.c
+    samples/core/task_suspend.c
+    samples/core/task_yield.c
+    samples/misc/soclient.c
+    src/arch/sparc/common/rtems/drv_mgr_config.h
+    src/arch/sparc/common/rtems/osmemram.c
+    src/arch/sparc/common/rtems/rasta-rtems4.8/config.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/leon2/rtems/bsp/bsp_glue.c
+    src/arch/sparc/leon3/rtems/bsp/bsp_glue.c
+    src/arch/x86/common/osmemram.c
+    src/arch/x86/linux/bsp/bsp_glue.c
+    src/common/oscrc.c
+    src/common/osecc.c
+    src/common/osmisc.c
+    src/common/ospool.c
+    src/common/osqueue.c
+    src/os/linux/osapi.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osint.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osnetwork.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/rtems/osapi.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/oshandlers.c
+    src/os/rtems/osint.c
+    src/os/rtems/osmut.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    src/arch/sparc/common/rtems/rasta-rtems4.8/networkconfig.h
+------------------------------------------------------------
+revno: 47 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: trunk
+timestamp: Mon 2010-11-29 18:42:41 +0100
+message:
+  - Filesystem-related files removed
+  - Some doxygen code added
+  - Possible fix of the problem Scisys is having with the network
+  
+  removed:
+    samples/bli/
+    samples/bli/blockserver.c
+    samples/bli/blockserver.h
+    samples/bli/bw_rspdev.c
+    samples/bli/lf_blockserver.c
+    samples/bli/pciram_blkserver.c
+    samples/bli/test_rspdev.c
+    samples/fpss/
+    samples/fpss/file_list.c
+    samples/fpss/file_ls.c
+    samples/fpss/file_nomred.c
+    samples/fpss/file_recovery.c
+    samples/fpss/file_task.c
+    samples/fpss/file_tasknr.c
+    samples/fpss/file_test.c
+    samples/fpss/fpss_write.c
+    samples/fpss/fs_common.c
+    samples/fpss/fs_copyfile.c
+    samples/fpss/fs_createfile.c
+    samples/fpss/fs_deletedir.c
+    samples/fpss/fs_deletefile.c
+    samples/fpss/fs_findfile.c
+    samples/fpss/fs_listlockedfiles.c
+    samples/fpss/fs_lockfile.c
+    samples/fpss/fs_movefile.c
+    samples/fpss/fs_openfile.c
+    samples/fpss/fs_readfile.c
+    samples/fpss/fs_writefile.c
+    samples/fpss/psas_concurrent_rw.c
+    samples/fpss/psas_free.c
+    samples/fpss/psas_lseek.c
+    samples/fpss/psas_misc.c
+    samples/fpss/psas_mount.c
+    samples/fpss/psas_overwrite.c
+    samples/fpss/psas_reset.c
+    samples/fpss/psas_rwcheck.c
+    samples/fpss/psas_thruput.c
+    samples/fpss/psas_write.c
+    samples/fpss/ut_all.c
+    samples/rofs/
+    samples/rofs/autotest.c
+    samples/rootfs/
+    samples/rootfs/Makefile
+    samples/rootfs/file.c
+    samples/rootfs/rootfs/
+    samples/rootfs/rootfs/file.txt
+    samples/rootfs/rootfs/mnt/
+    samples/rootfs/rootfs/mnt/file.txt
+    src/common/psas.h
+  added:
+    src/arch/sparc/common/rtems/network_interface_add.h
+  renamed:
+    src/os/linux/osqueue.c => src/os/linux/osqueue.c.linux
+    src/os/rtems/osqueue.c => src/os/rtems/osqueue.c.rtems
+  modified:
+    .bzrignore
+    Doxyfile
+    defs.mk
+    include/osal/osapi.h
+    include/osal/osconfig.h
+    include/osal/oscore.h
+    include/osal/oserr.h
+    include/osal/osmut.h
+    include/osal/ospool.h
+    include/osal/osqueue.h
+    include/osal/ossem.h
+    include/osal/ostask.h
+    samples/core/queue.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/common/rtems/rtems-network.c
+    src/arch/sparc/common/rtems/rtems4.10-network.c
+    src/common/osqueue.c
+------------------------------------------------------------
+revno: 46 [merge]
+tags: Scisys-20101127
+committer: Aitor Viana <aitor@rodano>
+branch nick: trunk
+timestamp: Sat 2010-11-27 19:57:49 +0100
+message:
+  - config files for leon3 fixed
+  - priority message queues implemented OS-independent
+  - GRETH register added again
+  
+  added:
+    src/common/osqueue.c
+  modified:
+    config/config_leon3_rasta_rtems.cfg
+    config/config_leon3_rasta_rtems_dbg.cfg
+    defs.mk
+    include/osal/osqueue.h
+    rules.cml
+    samples/core/queue.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/x86/linux/bsp/bsp_glue.c
+------------------------------------------------------------
+revno: 45 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Tue 2010-11-23 22:50:27 +0100
+message:
+  - Merge with devel
+  - Warnings out
+  
+  modified:
+    samples/core/deadman.c
+    samples/core/mem_mgr.c
+    samples/core/mem_pool.c
+    samples/core/sem_flush.c
+    samples/core/task_monotonic.c
+    samples/core/task_sporadic.c
+    samples/core/task_suspend.c
+    samples/core/task_yield.c
+    samples/core/time_getticks.c
+    samples/core/time_gettime.c
+    samples/core/timer_simple.c
+    samples/core/timer_tod.c
+    samples/misc/soclient.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostimer.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+------------------------------------------------------------
+revno: 44 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Tue 2010-11-23 20:27:57 +0100
+message:
+  - The timer is fixed in both RTEMS and Linux
+  - The timer in RTEMS receives a parameter
+  - New configuration files added
+  - Suggestions from Scisys added in defs.mk
+  - Warnings out of the samples
+  
+  added:
+    config/config_leon3_rasta_rtems.cfg
+    config/config_leon3_rasta_rtems_dbg.cfg
+    config/config_leon3_rtems.cfg
+    config/config_leon3_rtems_dbg.cfg
+  modified:
+    defs.mk
+    samples/core/timer_simple.c
+    samples/misc/bubble.c
+    samples/misc/hanoi.c
+    samples/misc/matmul.c
+    samples/misc/perm.c
+    samples/misc/qsort.c
+    samples/misc/queen.c
+    samples/misc/sieve.c
+    samples/misc/whets.c
+    samples/rasta-spw/echoc.c
+    samples/rasta-spw/echos.c
+    src/arch/sparc/leon3/rtems/bsp/bsp_glue.c
+    src/os/linux/osapi.c
+    src/os/rtems/ostimer.c
+  pending merges:
+    Aitor Viana 2010-11-23 - Timer is implemented in RTEMS so a parameter can be passed to the timer handle
+      Aitor Viana 2010-11-22 - Warnings out
+      Aitor Viana 2010-11-19 - Some extra configuration files for LEON3 added for Scisys
+      Aitor Viana 2010-11-19 - The leon3 BSP code was not checked and contained some undefined return values
+------------------------------------------------------------
+revno: 43 [merge]
+tags: Scisys-2010.11.18
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2010-11-18 18:27:59 +0100
+message:
+  - Incorporate all the changes to the trunk
+  - this revision was provided to Scisys on 2010.11.18
+  
+  removed:
+    include/bli/
+    include/bli/blockdev.h
+    include/bli/bytedev.h
+    include/bli/config.h
+    include/bli/localfile_blockdev.h
+    include/bli/localram_blockdev.h
+    include/bli/mamma_errors.h
+    include/bli/mamma_rsp.h
+    include/bli/mamma_util.h
+    include/bli/multi_blockdev.h
+    include/bli/multi_raid1_blockdev.h
+    include/bli/multi_raid5_blockdev.h
+    include/bli/multi_tmr_blockdev.h
+    include/bli/pciram_blockdev.h
+    include/bli/plain_bytedev.h
+    include/bli/rsp_blockdev.h
+    include/bli/rsp_frame.h
+    include/bli/rsp_link.h
+    include/bli/rsp_packet.h
+    include/glue/rofs-bli.h
+    include/mm6165d/
+    include/mm6165d/mm6165d.h
+    include/osal/osfile.h
+    include/osal/ospacket.h
+    include/rofs/
+    include/rofs/block.h
+    include/rofs/bpt.h
+    include/rofs/cache-pol.h
+    include/rofs/cache-rt.h
+    include/rofs/cache.h
+    include/rofs/config.h
+    include/rofs/debug.h
+    include/rofs/fbm.h
+    include/rofs/format.h
+    include/rofs/ls.h
+    include/rofs/rofs.h
+    include/rofs/rt.h
+    include/rofs/sp.h
+    samples/core/wdog.c
+    src/common/osfile.c
+    src/common/ospacket.c
+    src/dev/
+    src/dev/bli/
+    src/dev/bli/blockdev.c
+    src/dev/bli/bytedev.c
+    src/dev/bli/localfile_blockdev.c
+    src/dev/bli/localram_blockdev.c
+    src/dev/bli/mamma_rsp.c
+    src/dev/bli/multi_blockdev.c
+    src/dev/bli/multi_raid1_blockdev.c
+    src/dev/bli/multi_raid5_blockdev.c
+    src/dev/bli/multi_tmr_blockdev.c
+    src/dev/bli/pciram_blockdev.c
+    src/dev/bli/plain_bytedev.c
+    src/dev/bli/rsp_blockdev.c
+    src/dev/bli/rsp_frame.c
+    src/dev/bli/rsp_link.c
+    src/dev/bli/rsp_packet.c
+    src/dev/mm6165d/
+    src/dev/mm6165d/drv_mm6165d.c
+    src/rofs/
+    src/rofs/bpt.c
+    src/rofs/cache-pol.c
+    src/rofs/cache-rt.c
+    src/rofs/cache.c
+    src/rofs/debug.c
+    src/rofs/fbm.c
+    src/rofs/ls.c
+    src/rofs/mkfs.c
+    src/rofs/rofs-lfbli.c
+    src/rofs/rofs-pcirambli.c
+    src/rofs/rofs-rambli.c
+    src/rofs/rofs-rspbli.c
+    src/rofs/rofs.c
+    src/rofs/rt.c
+    src/rofs/sp.c
+  added:
+    doc/budgets/linux_budgets.10.06.07
+    doc/budgets/rtems_budgets.10.06.07
+    include/glue/breakme.h
+    samples/core/deadman.c
+    samples/core/time_getticks.c
+    samples/core/time_gettime.c
+    samples/fpss/fs_common.c
+    samples/fpss/fs_copyfile.c
+    samples/fpss/fs_createfile.c
+    samples/fpss/fs_deletedir.c
+    samples/fpss/fs_deletefile.c
+    samples/fpss/fs_findfile.c
+    samples/fpss/fs_listlockedfiles.c
+    samples/fpss/fs_lockfile.c
+    samples/fpss/fs_movefile.c
+    samples/fpss/fs_openfile.c
+    samples/fpss/fs_readfile.c
+    samples/fpss/fs_writefile.c
+    samples/fpss/ut_all.c
+  modified:
+    Doxyfile
+    defs.mk
+    include/osal/osapi.h
+    include/osal/oscore.h
+    include/osal/osdebug.h
+    include/osal/oserr.h
+    include/osal/oshwcore.h
+    include/osal/osint.h
+    include/osal/osmemmgr.h
+    include/osal/osmut.h
+    include/osal/ospool.h
+    include/osal/osqueue.h
+    include/osal/ossem.h
+    include/osal/osstats.h
+    include/osal/ostask.h
+    include/osal/ostime.h
+    include/osal/ostimer.h
+    include/osal/osutils.h
+    md5sum.txt
+    rules.cml
+    samples/bli/blockserver.c
+    samples/bli/bw_rspdev.c
+    samples/bli/lf_blockserver.c
+    samples/bli/pciram_blkserver.c
+    samples/core/clockbug.c
+    samples/core/mem_mgr.c
+    samples/core/mem_pool.c
+    samples/core/sem_counting.c
+    samples/core/sem_flush.c
+    samples/core/task_monotonic.c
+    samples/core/task_sporadic.c
+    samples/core/task_suspend.c
+    samples/core/task_yield.c
+    samples/core/timer_linux.c
+    samples/core/timer_simple.c
+    samples/core/timer_tod.c
+    samples/fpss/file_list.c
+    samples/fpss/file_ls.c
+    samples/fpss/file_nomred.c
+    samples/fpss/file_recovery.c
+    samples/fpss/file_task.c
+    samples/fpss/file_tasknr.c
+    samples/fpss/file_test.c
+    samples/fpss/fpss_write.c
+    samples/fpss/psas_concurrent_rw.c
+    samples/fpss/psas_free.c
+    samples/fpss/psas_lseek.c
+    samples/fpss/psas_misc.c
+    samples/fpss/psas_mount.c
+    samples/fpss/psas_overwrite.c
+    samples/fpss/psas_reset.c
+    samples/fpss/psas_rwcheck.c
+    samples/fpss/psas_thruput.c
+    samples/fpss/psas_write.c
+    samples/misc/soclient.c
+    samples/rootfs/file.c
+    src/arch/sparc/common/rtems/osmemram.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/common/rtems/rtems4.10-network.c
+    src/arch/sparc/leon2/rtems/bsp/bsp_glue.c
+    src/arch/x86/common/osmemram.c
+    src/arch/x86/linux/bsp/bsp_glue.c
+    src/common/clocktodtoseconds.c
+    src/common/clocktodvalidate.c
+    src/common/oscrc.c
+    src/common/osecc.c
+    src/common/osmisc.c
+    src/common/ospool.c
+    src/common/psas.h
+    src/os/linux/osapi.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osint.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osnetwork.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/rtems/gmon.c
+    src/os/rtems/gmon_link_gl.c
+    src/os/rtems/osapi.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osint.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+  unknown:
+    gmon.out
+    remote-commit.sh
+    remote-patch.sh
+    remote-update.sh
+    doc/html/
+    doc/osalTagfile.txt
+    include/autoconf.h
+  pending merges:
+    Aitor Viana 2010-11-15 - The timer interface was not properly implemented in RTEMS. It was changed to
+      Aitor Viana 2010-11-03 - PRINT -> printf
+      Aitor Viana 2010-10-07 - Warnings out
+      Aitor Viana 2010-10-06 - ROFS out of the OSAL
+      Aitor Viana 2010-10-06 - extra stuff for network configuration (DHCP/BOOTP)
+      Aitor Viana 2010-10-06 - OS_GetError not used anymore
+      Aitor Viana 2010-10-06 - TSR only has one parameter
+      Aitor Viana 2010-10-06 - NEEDS_TIMER_DRIVER added
+      Aitor Viana 2010-10-06 - timer may be implemented with or without server
+      Aitor Viana 2010-10-06 modified:
+      Aitor Viana 2010-10-06 - Bug in the timers corrected
+      Aitor Viana 2010-09-21 - The system time is initialised in the ostime.c file rather than osapi.c
+      Aitor Viana 2010-09-17 - doxygen layout has changed a bit
+      Aitor Viana 2010-09-17 - The example was not working due to some mods in the rtems/osapi.c file. The
+      Aitor Viana 2010-09-15 - when File system is not configured the osfile.c and ospacket.c files are not
+      Aitor Viana 2010-09-15 - OS_GetErrorName() functions removed
+      Aitor Viana 2010-09-09 - The new function OS_GetTicksPerSecond() has been added.
+      Aitor Viana 2010-09-09 - The test uses periodic tasks
+      Aitor Viana 2010-09-08 - All the functions to get the time are represented:
+      Aitor Viana 2010-09-08 - A new sample is added. This example shows the difference between
+      Aitor Viana 2010-07-30 - The OS_TICKS_PER_SECOND parameter was bad used in some multiplication
+      Aitor Viana 2010-07-29 - OS_GetTicks() had an bug and was not returning the correct number of ticks
+      Aitor Viana 2010-07-29 - OS_GetTicksSinceBoot is not OS_GetTicks() and returns uint32_t
+      Aitor Viana 2010-07-29 - OS_GetTicksSinceBoot() function added
+      Aitor Viana 2010-07-27 - The FS_DeleteDir() unitary tests implemented
+      Aitor Viana 2010-07-27 - Number of devices were not discounted when a device was destroyed
+      Aitor Viana 2010-07-22 - The returned error codes for File and Packet Store have been changed.
+      Aitor Viana 2010-07-22 - The FS_ListLockedFiles() unitary test is added
+      Aitor Viana 2010-07-22 - FS_LockFile() and FS_UnLockFile() unitary tests added and working
+      Aitor Viana 2010-07-22 - Bugs due to the change mt_ to mul_ in some struct members have been fixed
+      Aitor Viana 2010-07-22 - The defines changed name so they maintain different names for different tests
+      Aitor Viana 2010-07-22 - The FS_OpenFile() function is now tested using the lock parameter. Files are
+      Aitor Viana 2010-07-21 - The FS_FindFile() unitary test implemented.
+      Aitor Viana 2010-07-21 - The members of a structure were always declared as "mt_" but this is not the
+      Aitor Viana 2010-07-21 - PS_ReadPackets() function changed to conform to the Service Interface of the
+      Aitor Viana 2010-07-21 - The error codes for the File and Packet Store services are moved to the
+      Aitor Viana 2010-07-20 - FS_MoveFile() Unitary test implemented
+      Aitor Viana 2010-07-20 - Unitary tests added to control. 
+      Aitor Viana 2010-07-19 - bugs in the FS_OpenFile() function fixed
+      Aitor Viana 2010-07-19 - Some functions definitions added to the ospacket.h but not yet implemented.
+      Aitor Viana 2010-07-19 - The SOIS File Services are now complete and in compliance with the SOIS FPSS
+      Aitor Viana 2010-07-16 - Packet Store API matched to the SOIS FPSS API document
+      Aitor Viana 2010-07-16 - FS_FindFile() doxygen comments were wrong
+      Aitor Viana 2010-07-16 - The function names changed to be inline withthe coding rules of the SOIS FPSS
+      Aitor Viana 2010-07-13 - The FS_read() function takes now a file offset as parameter.
+      Aitor Viana 2010-07-13 - Some error codes modified
+      Aitor Viana 2010-07-13 - An error due to the removal of FS_STATUS_EINVAL
+      Aitor Viana 2010-07-13 - Some more errors added
+      Aitor Viana 2010-07-13 - Allthe OS_xxxx functions related to File and Packet stored system changed to
+      Aitor Viana 2010-06-29 - All the errors OS_ERR_ changed to G_STATUS_ for compliance to SOIS API
+      Aitor Viana 2010-06-29 - OS_ERR_PS_XXX changed to PS_STATUS_XXX
+      Aitor Viana 2010-06-29 - 'goto' lines changed by 'return' 
+      Aitor Viana 2010-06-29 modified:
+      Aitor Viana 2010-06-29 - 64 maximum opened files default value
+      Aitor Viana 2010-06-29 - variables that shadow global variables changed name
+      Aitor Viana 2010-06-29 - re-defined static function removed
+      Aitor Viana 2010-06-15 - variable shadowing corrected
+      Aitor Viana 2010-06-15 - variable shadowing corrected
+      Aitor Viana 2010-06-15 - uninitialised variable initialised
+      Aitor Viana 2010-06-15 - new compilation flags to enforce the coding style
+      Aitor Viana 2010-06-15 - variable shadowing prevented
+      Aitor Viana 2010-06-15 - command removed from end enum element
+      Aitor Viana 2010-06-15 - comments removed
+      Aitor Viana 2010-06-15 - comma at the end of an enum field removed
+      Aitor Viana 2010-06-15 - commented code out
+      Aitor Viana 2010-06-15 - breakme in the header file
+      Aitor Viana 2010-06-15 - breakme defined in a header file
+      Aitor Viana 2010-06-15 added:
+      Aitor Viana 2010-06-15 - commented code removed
+      Aitor Viana 2010-06-15 - cast
+      Aitor Viana 2010-06-15 - Shadowed variables removed
+      Aitor Viana 2010-06-15 - commented code removed
+      Aitor Viana 2010-06-15 - Commented code has been removed
+      Aitor Viana 2010-06-15 - comply with coding rules
+      Aitor Viana 2010-06-11 - The STATS_CURR_TASKS() macro is added to return the current number of tasks.
+      Aitor Viana 2010-06-11 - OS_task_key has been remove
+      Aitor Viana 2010-06-11 - OS_TaskExit() function is done differently to detect when the last task is
+      Aitor Viana 2010-06-07 added:
+------------------------------------------------------------
+revno: 42
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Fri 2010-05-21 19:00:14 +0200
+message:
+  added:
+    md5sum.sh
+------------------------------------------------------------
+revno: 41
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Fri 2010-05-21 18:54:45 +0200
+message:
+  modified:
+    ChangeLog
+------------------------------------------------------------
+revno: 40 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Fri 2010-05-21 18:53:34 +0200
+message:
+  - This is a merge from devel
+      - The coding naming has been chanced
+      - Some warnings have been removed
+      - Also some mods have been performed in the Packet Store
+  
+  added:
+    samples/fpss/psas_concurrent_rw.c
+  renamed:
+    src/common/osfpacket.c => src/common/ospacket.c
+  modified:
+    Makefile
+    defs.mk
+    include/osal/oscore.h
+    include/osal/osfile.h
+    include/osal/osmut.h
+    include/osal/ospacket.h
+    include/osal/ospool.h
+    include/osal/osqueue.h
+    include/osal/ossem.h
+    include/osal/osstats.h
+    include/osal/ostask.h
+    include/osal/ostime.h
+    include/osal/ostimer.h
+    include/osal/osutils.h
+    samples/bli/bw_rspdev.c
+    samples/bli/pciram_blkserver.c
+    samples/core/clockbug.c
+    samples/core/mem_mgr.c
+    samples/core/mem_pool.c
+    samples/core/queue.c
+    samples/core/sem_counting.c
+    samples/core/sem_flush.c
+    samples/core/task_monotonic.c
+    samples/core/task_sporadic.c
+    samples/core/task_suspend.c
+    samples/core/task_yield.c
+    samples/core/timer_linux.c
+    samples/core/timer_simple.c
+    samples/core/timer_tod.c
+    samples/core/wdog.c
+    samples/fpss/file_list.c
+    samples/fpss/file_task.c
+    samples/fpss/file_tasknr.c
+    samples/fpss/file_test.c
+    samples/fpss/fpss_write.c
+    samples/fpss/psas_free.c
+    samples/fpss/psas_lseek.c
+    samples/fpss/psas_misc.c
+    samples/fpss/psas_overwrite.c
+    samples/fpss/psas_reset.c
+    samples/fpss/psas_rwcheck.c
+    samples/fpss/psas_thruput.c
+    samples/fpss/psas_write.c
+    samples/misc/soclient.c
+    src/arch/x86/linux/bsp/bsp_glue.c
+    src/common/clocktodtoseconds.c
+    src/common/clocktodvalidate.c
+    src/common/osstats.c
+    src/dev/mm6165d/drv_mm6165d.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/rtems/gmon.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    src/rofs/mkfs.c
+    src/rofs/rofs.c
+    src/common/ospacket.c
+------------------------------------------------------------
+revno: 39
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2010-05-20 16:39:19 +0200
+message:
+  modified:
+    ChangeLog
+------------------------------------------------------------
+revno: 38 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2010-05-20 16:31:47 +0200
+message:
+  - The GNU gprof (gmon) code has been added to the OSAL library. Now it is
+  possible to profile the OSAL library and so the application software.
+  - Makefile, defs.mk and rules.cml modifed accordingly to be able to (1)
+      configure the profiling and; (2) include the new tests.
+  - The profiling has been tested in TSIM(-HW) and in RASTA boards. In RASTA
+  different SDRAM waitstates have been used (2 and 10) and no difference in
+  execution has appeared
+  
+  - Some more examples added to the samples/misc directory (stanford benchmark)
+  - Some examples from samples/fpss and samples/core have been modified in order
+  to remove compilation warnings
+  
+  - .gdbinit file removed from control version
+  
+  removed:
+    .gdbinit
+  added:
+    samples/misc/bubble.c
+    samples/misc/hanoi.c
+    samples/misc/matmul.c
+    samples/misc/perm.c
+    samples/misc/qsort.c
+    samples/misc/queen.c
+    samples/misc/quicksort.c
+    samples/misc/sieve.c
+    src/os/linux/gmon.c
+    src/os/rtems/gmon.c
+    src/os/rtems/gmon.h
+    src/os/rtems/gmon_eth.c
+    src/os/rtems/gmon_link_gl.c
+    src/os/rtems/gmon_serial.c
+  modified:
+    .bzrignore
+    Makefile
+    defs.mk
+    rules.cml
+    samples/core/mem_mgr.c
+    samples/core/sem_flush.c
+    samples/core/task_monotonic.c
+    samples/fpss/fpss_write.c
+    samples/fpss/psas_free.c
+    samples/fpss/psas_lseek.c
+    samples/fpss/psas_overwrite.c
+    samples/fpss/psas_reset.c
+    samples/fpss/psas_rwcheck.c
+    samples/fpss/psas_thruput.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/common/rmalloc.c
+    src/os/rtems/osapi.c
+    src/os/rtems/ostask.c
+  pending merges:
+    Aitor Viana 2010-05-20 - doxygen
+      Aitor Viana 2010-05-20 - New misc test added
+      Aitor Viana 2010-05-20 - Some fixes needed to be done in order to make the gmon profiler working with
+      Aitor Viana 2010-05-17 - Add the possibility to dump the profile data using UDP connection.
+      Aitor Viana 2010-05-17 - Put gmon_ prefix upfront the function name
+      Aitor Viana 2010-05-17 - gmon.c is always compiled but it only has C code when it is configured to be
+      Aitor Viana 2010-05-17 - Doxy file header
+      Aitor Viana 2010-05-17 - The s_scale variable is removed and the HISTFRACTION is used to calculated the
+      Aitor Viana 2010-05-17 - The osal_config.h header file was removed wrongly
+      Aitor Viana 2010-05-17 - minor changes and removed headers
+      Aitor Viana 2010-05-17 - The profiling is now working.
+      Aitor Viana 2010-05-17 - unused variable commented
+      Aitor Viana 2010-05-17 - It is possible to profile right now. 
+      Aitor Viana 2010-05-17 - RTMEMS Init() function joins until all system tasks are removed. Then it calls
+      Aitor Viana 2010-05-17 - OS_Start() does not delete the self task. It returns so RTEMS Init() function
+      Aitor Viana 2010-05-17 - Version printout in debug mode
+      Aitor Viana 2010-05-17 - atexit execute _mcleanup if profiling
+      Aitor Viana 2010-05-17 - malloc -> OS_Malloc
+      Aitor Viana 2010-05-17 - cast(s) added to remove warnings
+      Aitor Viana 2010-05-15 - The _mcleanup() function is implemented and it'll be in charge of flushing all
+      Aitor Viana 2010-05-15 - The profile is fully implemented and also the profil() functionality added.
+      Aitor Viana 2010-05-15 - Empty source file to be able to compile
+      Aitor Viana 2010-05-15 - To profile
+      Aitor Viana 2010-05-15 - working also in linux
+      Aitor Viana 2010-05-15 - The profile has improved. Now it is able to store profile information but
+      Aitor Viana 2010-05-15 added:
+      Aitor Viana 2010-05-15 - First non-working version of the profiling
+      Aitor Viana 2010-05-15 - Some warnings caused by TRACE calls are removed
+      Aitor Viana 2010-05-15 modified:
+------------------------------------------------------------
+revno: 37 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Sat 2010-05-15 13:01:23 +0200
+message:
+  - Some compilation errors where corrected due to OS_printf is not longer
+  available. It's changed to printf
+  - Some warnings removed
+  - Also some pre-configured files added in 'config' directory
+  
+  added:
+    config/
+    config/README.txt
+    config/config_leon2_rasta_rtems.cfg
+    config/config_leon2_rasta_rtems_dbg.cfg
+    config/config_leon2_rtems.cfg
+    config/config_leon2_rtems_dbg.cfg
+    config/config_linux.cfg
+    config/config_linux_dbg.cfg
+  modified:
+    Doxyfile
+    samples/bli/pciram_blkserver.c
+    samples/fpss/file_nomred.c
+    samples/fpss/file_tasknr.c
+    samples/fpss/psas_misc.c
+    src/dev/bli/plain_bytedev.c
+------------------------------------------------------------
+revno: 36
+tags: SOIS_PoC_AFI_2010-05-12
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Wed 2010-05-12 09:51:12 +0200
+message:
+  modified:
+    ChangeLog
+------------------------------------------------------------
+revno: 35 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Wed 2010-05-12 09:29:33 +0200
+message:
+  added:
+    md5sum.txt
+  pending merges:
+    Aitor Viana 2010-05-12 added:
+------------------------------------------------------------
+revno: 34
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Wed 2010-05-12 09:14:58 +0200
+message:
+  added:
+    samples/core/timer_simple.c
+------------------------------------------------------------
+revno: 33 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Wed 2010-05-12 09:08:36 +0200
+message:
+  - Merge from dev cranch
+  
+  removed:
+    doc/osalTagfile.txt
+    examples/clockbug/
+    examples/file/Makefile
+    examples/file/file.c
+    examples/misc/hello.c
+    examples/pool/
+    examples/queue/
+    examples/semaphore/
+    examples/socket/
+    examples/task/
+    examples/timer/
+    examples/timer/timer.c
+    examples/wdog/
+  added:
+    .gdbinit
+    budgets.sh
+    doc/budgets/
+    doc/budgets/linux_budgets.10.04.13
+    doc/budgets/rtems_budgets.10.04.13
+    include/bli/
+    include/bli/blockdev.h
+    include/bli/bytedev.h
+    include/bli/config.h
+    include/bli/localfile_blockdev.h
+    include/bli/localram_blockdev.h
+    include/bli/mamma_errors.h
+    include/bli/mamma_rsp.h
+    include/bli/mamma_util.h
+    include/bli/multi_blockdev.h
+    include/bli/multi_raid1_blockdev.h
+    include/bli/multi_raid5_blockdev.h
+    include/bli/multi_tmr_blockdev.h
+    include/bli/pciram_blockdev.h
+    include/bli/plain_bytedev.h
+    include/bli/rsp_blockdev.h
+    include/bli/rsp_frame.h
+    include/bli/rsp_link.h
+    include/bli/rsp_packet.h
+    include/glue/rofs-bli.h
+    include/glue/types.h
+    include/mm6165d/
+    include/mm6165d/mm6165d.h
+    include/osal/ospacket.h
+    include/public/bit_util.h
+    include/public/hton.h
+    include/public/list.h
+    include/public/rofs-glue.h
+    include/rofs/
+    include/rofs/block.h
+    include/rofs/bpt.h
+    include/rofs/cache-pol.h
+    include/rofs/cache-rt.h
+    include/rofs/cache.h
+    include/rofs/config.h
+    include/rofs/debug.h
+    include/rofs/fbm.h
+    include/rofs/format.h
+    include/rofs/ls.h
+    include/rofs/rofs.h
+    include/rofs/rt.h
+    include/rofs/sp.h
+    samples/bli/
+    samples/bli/blockserver.c
+    samples/bli/blockserver.h
+    samples/bli/bw_rspdev.c
+    samples/bli/lf_blockserver.c
+    samples/bli/pciram_blkserver.c
+    samples/bli/test_rspdev.c
+    samples/core/
+    samples/core/sem_flush.c
+    samples/core/task_yield.c
+    samples/fpss/file_list.c
+    samples/fpss/file_ls.c
+    samples/fpss/file_nomred.c
+    samples/fpss/file_recovery.c
+    samples/fpss/file_task.c
+    samples/fpss/file_tasknr.c
+    samples/fpss/file_test.c
+    samples/fpss/fpss_write.c
+    samples/fpss/psas_free.c
+    samples/fpss/psas_lseek.c
+    samples/fpss/psas_misc.c
+    samples/fpss/psas_mount.c
+    samples/fpss/psas_overwrite.c
+    samples/fpss/psas_reset.c
+    samples/fpss/psas_rwcheck.c
+    samples/fpss/psas_thruput.c
+    samples/fpss/psas_write.c
+    samples/misc/demo.c
+    samples/misc/demo.h
+    samples/rasta-spw/bwc.c
+    samples/rasta-spw/bws.c
+    samples/rofs/
+    samples/rofs/autotest.c
+    src/common/hton.c
+    src/common/osfile.c
+    src/common/osfpacket.c
+    src/common/psas.h
+    src/common/rmalloc.c
+    src/dev/
+    src/dev/bli/
+    src/dev/bli/blockdev.c
+    src/dev/bli/bytedev.c
+    src/dev/bli/localfile_blockdev.c
+    src/dev/bli/localram_blockdev.c
+    src/dev/bli/mamma_rsp.c
+    src/dev/bli/multi_blockdev.c
+    src/dev/bli/multi_raid1_blockdev.c
+    src/dev/bli/multi_raid5_blockdev.c
+    src/dev/bli/multi_tmr_blockdev.c
+    src/dev/bli/pciram_blockdev.c
+    src/dev/bli/plain_bytedev.c
+    src/dev/bli/rsp_blockdev.c
+    src/dev/bli/rsp_frame.c
+    src/dev/bli/rsp_link.c
+    src/dev/bli/rsp_packet.c
+    src/dev/mm6165d/
+    src/dev/mm6165d/drv_mm6165d.c
+    src/os/linux/linconfig.h
+    src/rofs/
+    src/rofs/bpt.c
+    src/rofs/cache-pol.c
+    src/rofs/cache-rt.c
+    src/rofs/cache.c
+    src/rofs/debug.c
+    src/rofs/fbm.c
+    src/rofs/ls.c
+    src/rofs/mkfs.c
+    src/rofs/rofs-lfbli.c
+    src/rofs/rofs-pcirambli.c
+    src/rofs/rofs-rambli.c
+    src/rofs/rofs-rspbli.c
+    src/rofs/rofs.c
+    src/rofs/rt.c
+    src/rofs/sp.c
+  renamed:
+    examples/ => samples/
+    examples/clockbug/clockbug.c => samples/core/clockbug.c
+    examples/file/ => samples/fpss/
+    examples/pool/memmgr.c => samples/core/mem_mgr.c
+    examples/pool/pool.c => samples/core/mem_pool.c
+    examples/queue/prio_send.c => samples/core/queue.c
+    examples/semaphore/counting.c => samples/core/sem_counting.c
+    examples/socket/socket.c => samples/misc/socket.c
+    examples/socket/socket.h => samples/misc/socket.h
+    examples/socket/soclient.c => samples/misc/soclient.c
+    examples/task/monotonic.c => samples/core/task_monotonic.c
+    examples/task/sporadic.c => samples/core/task_sporadic.c
+    examples/task/suspend.c => samples/core/task_suspend.c
+    examples/timer/linux_timer.c => samples/core/timer_linux.c
+    examples/timer/tod.c => samples/core/timer_tod.c
+    examples/wdog/watchdog.c => samples/core/wdog.c
+    include/osal/osfilesys.h => include/osal/osfile.h
+    src/common/osmemmgr.c => src/common/osmemmgr.c.bak
+    src/os/linux/osfileapi.c => src/os/linux/osfileapi.c.old
+    src/os/linux/osfilesys.c => src/os/linux/osfilesys.c.old
+    src/os/osx/osfileapi.c => src/os/osx/osfileapi.c.old
+    src/os/osx/osfilesys.c => src/os/osx/osfilesys.c.old
+    src/os/rtems/osfileapi.c => src/os/rtems/osfileapi.c.old
+    src/os/rtems/osfilesys.c => src/os/rtems/osfilesys.c.old
+  modified:
+    .bzrignore
+    ChangeLog
+    INSTALL
+    Makefile
+    defs.mk
+    include/osal/osapi.h
+    include/osal/osconfig.h
+    include/osal/oscore.h
+    include/osal/osdebug.h
+    include/osal/oserr.h
+    include/osal/osmemmgr.h
+    include/osal/osstats.h
+    include/osal/ostask.h
+    include/osal/ostypes.h
+    rules.cml
+    samples/bogomips/bogomips.c
+    samples/misc/whets.c*
+    samples/rasta-spw/echoc.c
+    samples/rasta-spw/echos.c
+    samples/rootfs/file.c
+    scripts/linkcmds.leon2
+    scripts/linkcmds.leon3
+    src/arch/sparc/common/rtems/bsp_voltab.c
+    src/arch/sparc/common/rtems/drv_mgr_config.h
+    src/arch/sparc/common/rtems/osmemram.c
+    src/arch/sparc/common/rtems/rasta-rtems4.8/config.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/common/rtems/rtems-network.c
+    src/arch/x86/linux/bsp/bsp_glue.c
+    src/arch/x86/linux/bsp/bsp_voltab.c
+    src/common/clocktodvalidate.c
+    src/common/dummy.c
+    src/common/osmisc.c
+    src/common/ospool.c
+    src/os/linux/osapi.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osnetwork.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/osx/osapi.c
+    src/os/rtems/osapi.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osint.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    samples/core/clockbug.c
+    samples/core/mem_mgr.c
+    samples/core/mem_pool.c
+    samples/core/queue.c
+    samples/core/sem_counting.c
+    samples/misc/soclient.c
+    samples/core/task_monotonic.c
+    samples/core/task_sporadic.c
+    samples/core/task_suspend.c
+    samples/core/timer_linux.c
+    samples/core/timer_tod.c
+    samples/core/wdog.c
+    include/osal/osfile.h
+    src/common/osmemmgr.c.bak
+  pending merges:
+    Aitor Viana 2010-05-12 removed:
+      Aitor Viana 2010-05-12 - The RASTA spacewire bandwidt tests are added. This test tries to calculate the
+      Aitor Viana 2010-05-11 - Uses OS_Malloc so added the osmemmgr.h header file
+      Aitor Viana 2010-05-11 - Extern functions added so we avoid warnings
+      Aitor Viana 2010-05-10 - malloc -> OS_Malloc
+      Aitor Viana 2010-05-10 - Compilation warnings out
+      Aitor Viana 2010-05-10 - The memory management system has bee changed to the debug memory allocation
+      Aitor Viana 2010-05-07 - OSAL does not allocate memory
+      Aitor Viana 2010-05-07 - OS_printf -> printf
+      Aitor Viana 2010-05-07 - OS_printf -> printf
+      Aitor Viana 2010-05-07 - un-initialized variable now initialized
+      Aitor Viana 2010-05-07 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - better for mkprom
+      Aitor Viana 2010-04-29 - usage of yield
+      Aitor Viana 2010-04-29 - usage of OS_TaskYield
+      Aitor Viana 2010-04-29 - doxygen
+      Aitor Viana 2010-04-29 - rtems_wake_after() in yield function
+      Aitor Viana 2010-04-29 - sched_yield() in OS_TaskYield()
+      Aitor Viana 2010-04-29 - OS_TaskYield() added
+      Aitor Viana 2010-04-29 - OS_printf -> printf
+      Aitor Viana 2010-04-29 - Alive MMU message
+      Aitor Viana 2010-04-28 - link is working now
+      Aitor Viana 2010-04-28 - printfs and comments
+      Aitor Viana 2010-04-28 - OS_printf to printf
+      Aitor Viana 2010-04-28 - do not print the topology
+      Aitor Viana 2010-04-28 - LEON configuration
+      Aitor Viana 2010-04-28 - The maximum number of MM6165d boards is 2. Otherwise the interfaces stop
+      Aitor Viana 2010-04-28 - stdlib added
+      Aitor Viana 2010-04-28 - default configurations for spacewire changed
+      Aitor Viana 2010-04-28 - MM6165d driver support
+      Aitor Viana 2010-04-28 - Compile the MM6165d driver support
+      Aitor Viana 2010-04-28 - The MM6165d driver is added and the can be compiled according to configuration
+      Aitor Viana 2010-04-28 - OS_psas_xxx() changed to PS_xxx
+      Aitor Viana 2010-04-26 - Brackets in if statement
+      Aitor Viana 2010-04-23 - stdlib added
+      Aitor Viana 2010-04-21 - printouts added
+      Aitor Viana 2010-04-20 modified:
+      Aitor Viana 2010-04-20 - mntsize not used anymore
+      Aitor Viana 2010-04-20 - The psid is the s_ps_info structure address
+      Aitor Viana 2010-04-20 - ROFS errors are from -500 on
+      Aitor Viana 2010-04-20 - mkps function was not behaving correctly when an error occurred
+      Aitor Viana 2010-04-20 - ASSERT derived from DEBUG
+      Aitor Viana 2010-04-20 modified:
+      Aitor Viana 2010-04-20 modified:
+      Aitor Viana 2010-04-20 modified:
+      Aitor Viana 2010-04-20 - ASSERT is do{}while(0) when not used
+      Aitor Viana 2010-04-20 - _create_ps_fs() function calls OS_umount() when it is not possible to moun the
+      Aitor Viana 2010-04-20 - _get_new_volume changed to _get_fs_entry()
+      Aitor Viana 2010-04-20 - an assert is commented so the test can fail
+      Aitor Viana 2010-04-20 - The _init_fs function waits until the MMU is ready to be mounted
+      Aitor Viana 2010-04-20 - ensure we return OS_ERROR in the OS_mount function
+      Aitor Viana 2010-04-20 - An error in the mkps function. The fsid parameter was unsigned but an
+      Aitor Viana 2010-04-19 - psas_thruput as default app
+      Aitor Viana 2010-04-19 - The psas_rwcheck test added to the compilation chain
+      Aitor Viana 2010-04-19 modified:
+      Aitor Viana 2010-04-19 added:
+      Aitor Viana 2010-04-19 renamed:
+      Aitor Viana 2010-04-16 - Changes in the configuration rules.cml file done
+      Aitor Viana 2010-04-16 - one more ASSERT
+      Aitor Viana 2010-04-14 - dft_xx functions changed to ram_xxx functions
+      Aitor Viana 2010-04-13 modified:
+      Aitor Viana 2010-04-13 added:
+      Aitor Viana 2010-04-13 - Max number of opened files configured by use as well
+      Aitor Viana 2010-04-13 - OS_FS_Init() changed to _os_fs_init()
+      Aitor Viana 2010-04-13 modified:
+      Aitor Viana 2010-04-13 modified:
+      Aitor Viana 2010-04-13 - The technical budgets script and data added
+      Aitor Viana 2010-04-07 modified:
+      Aitor Viana 2010-04-07 - read/write counters printed
+      Aitor Viana 2010-04-07 - _get_ps_from_psid removed as it is no longer used
+      Aitor Viana 2010-04-07 - All the File System related structures are not inside the os_filesystem_info_t
+      Aitor Viana 2010-04-07 - error corrected
+      Aitor Viana 2010-04-07 - all the internal functions use now 'fsid'
+      Aitor Viana 2010-04-07 - The fsid is now the address of the structure. This removes one call under
+      Aitor Viana 2010-04-07 - A bug in the OS_find fuction was corrected. The function failed when the file
+      Aitor Viana 2010-04-07 - warnings
+      Aitor Viana 2010-04-07 - The OS_XX_Init functions are now local to the corresponding class.
+      Aitor Viana 2010-04-07 - The _CHECK_XX macros cannot be within critical as the semaphores are not yet
+      Aitor Viana 2010-04-07 - Use the just compiled library
+      Aitor Viana 2010-04-07 - Return error in some conditions
+      Aitor Viana 2010-04-07 - The OS_XX_Init functions are now local to the different classes and are not
+      Aitor Viana 2010-04-07 - OS_FS_Init removed
+      Aitor Viana 2010-04-07 - The OS_Init() functions do not called the OS_PS_Init and OS_FS_Init functions
+      Aitor Viana 2010-04-07 - The OS_FS_Init() and OS_PS_Init() functions are now local to the File and
+      Aitor Viana 2010-04-07 - Better compilation policies
+      Aitor Viana 2010-04-06 - The library name is generated automatically
+      Aitor Viana 2010-04-06 - An error when optionaly compiling the tests
+      Aitor Viana 2010-04-06 - Mods in the error codes
+      Aitor Viana 2010-04-06 - file_tasknr and fpss_write test added to the compilation chain
+      Aitor Viana 2010-04-01 - The number of packets stores is in rules.cml so needed to be here too
+      Aitor Viana 2010-04-01 - The Ps super block is protected with CRC now
+      Aitor Viana 2010-04-01 - The Packet Store reserves only the super-block space at the beggining
+      Aitor Viana 2010-04-01 - The OS_psas_remove amd OS_psas_umount changed a little to better use the
+      Aitor Viana 2010-04-01 - LOCAL -> static change
+      Aitor Viana 2010-04-01 - The mount point is no longer used
+      Aitor Viana 2010-04-01 - read_count and write_count fields added to the super-block
+      Aitor Viana 2010-03-31 - 'address' field deleted from the super block
+      Aitor Viana 2010-03-31 - Some unused fields deleted from the superblock
+      Aitor Viana 2010-03-31 - The Packet Store implements the read/write counts solution to solve the
+      Aitor Viana 2010-03-31 - Some critical sections and policy changed.
+      Aitor Viana 2010-03-31 - This file test the File and Packet Store concurrent access
+      Aitor Viana 2010-03-31 - _create_ps_fs() function was using the wrong fsid when creating the File
+      Aitor Viana 2010-03-31 - The _concat_char() function didn't work when '/' was passed as 'str'
+      Aitor Viana 2010-03-31 - All the File System function need the fsid as parameter
+      Aitor Viana 2010-03-30 - The mountpoint is not used anymore
+      Aitor Viana 2010-03-30 modified:
+      Aitor Viana 2010-03-30 - _curdir changed to curdir
+      Aitor Viana 2010-03-30 - This test creates two tasks, each of them writing in one File Store
+      Aitor Viana 2010-03-30 - All the File System functions need the fsid input parameter
+      Aitor Viana 2010-03-30 - Each Packet Store is now implemented over one file residing on the same File
+      Aitor Viana 2010-03-30 - The OS_sync() function is added. This function forces changed blocks to the
+      Aitor Viana 2010-03-30 - The _concat_char() function was concatenating wrongly
+      Aitor Viana 2010-03-30 - Tne number of Packet Stores is now configurable through the 'make menuconfig'
+      Aitor Viana 2010-03-29 modified:
+      Aitor Viana 2010-03-26 - The test have been commented
+      Aitor Viana 2010-03-26 - New test added
+      Aitor Viana 2010-03-26 - The test has been modified. Now we randomly select the packet size and always
+      Aitor Viana 2010-03-26 - some variables changed name
+      Aitor Viana 2010-03-25 - minor changes in the _write_packet() function
+      Aitor Viana 2010-03-25 - A bug's been found in the _read_packet function. When the parameter 'packet' was
+      Aitor Viana 2010-03-24 - The FIFO circular Packet Store is implemented
+      Aitor Viana 2010-03-24 - Due to the change of error codes, the test was wrong
+      Aitor Viana 2010-03-24 - The _rb_data_size() function is fixed
+      Aitor Viana 2010-03-17 added:
+      Aitor Viana 2010-03-17 - An error in the 'bread' variable assigment in the OS_psas_read() function is
+      Aitor Viana 2010-03-16 - doxygen comments
+      Aitor Viana 2010-03-16 modified:
+      Aitor Viana 2010-03-16 - Some error codes have changed
+      Aitor Viana 2010-03-16 - All the new psas tests added
+      Aitor Viana 2010-03-15 - Doxygen
+      Aitor Viana 2010-03-15 - The PAcket Store file needs to be bigger than the Packet Store so it can be
+      Aitor Viana 2010-03-15 - EINVAL and OS_read() function does not assert the buffer
+      Aitor Viana 2010-03-15 - The rofs_read function only copies the data to the buffer if buffer != NULL
+      Aitor Viana 2010-03-15 - EINVAL error code introduced
+      Aitor Viana 2010-03-15 - Unused labels removed
+      Aitor Viana 2010-03-15 - Some error codes changed
+      Aitor Viana 2010-03-15 - Error codes changed
+      Aitor Viana 2010-03-15 - Some error codes changed
+      Aitor Viana 2010-03-11 - The curr_off field is added. This field will allow to rewind the read_off
+      Aitor Viana 2010-03-11 - The test was wrong
+      Aitor Viana 2010-03-11 - Comments
+      Aitor Viana 2010-03-11 - Doxygen
+      Aitor Viana 2010-03-11 - Some parameters have change name during documentation review
+      Aitor Viana 2010-03-11 - Error codes fixed
+      Aitor Viana 2010-03-11 - Header comments
+      Aitor Viana 2010-03-11 - Header comments
+      Aitor Viana 2010-03-11 - Unit test for OS_psas_reset() added
+      Aitor Viana 2010-03-11 - assertion in
+      Aitor Viana 2010-03-11 - Some bugs in the OS_psas_read() function were corrected. The bugs affected to
+      Aitor Viana 2010-03-11 - But in OS_psas_write() function discovered when the psas_write.c test is
+      Aitor Viana 2010-03-11 added:
+      Aitor Viana 2010-03-11 - The Packet Store size can be configured now
+      Aitor Viana 2010-03-11 - New options to remove the OSAL Packet Store API from the final binary
+      Aitor Viana 2010-03-11 - Minor changes in the comments and in the variable types
+      Aitor Viana 2010-03-10 - ospsas.h becomes ospacket.h
+      Aitor Viana 2010-03-10 - New test added
+      Aitor Viana 2010-03-10 - Some critical sections added
+      Aitor Viana 2010-03-10 - Specific test for OS_psas_mount() is added.
+      Aitor Viana 2010-03-10 renamed:
+      Aitor Viana 2010-03-10 - Some doxygen comments and some modifications in the OS_psas_mount() function
+      Aitor Viana 2010-03-10 - The OS_psas_remove() function is implemented and tested
+      Aitor Viana 2010-03-10 - Compilation warnings out
+      Aitor Viana 2010-03-08 - The FIFO circular and bound packet stores are implemented
+      Aitor Viana 2010-03-08 - first step towards the FIFO circular Packet Store implementation
+      Aitor Viana 2010-03-08 - warnings out
+      Aitor Viana 2010-03-08 - doxygen
+      Aitor Viana 2010-03-08 - New error code added
+      Aitor Viana 2010-03-08 - Increase the storage
+      Aitor Viana 2010-03-08 - The filesize field is included in the OS_fd_table_t structure. This field will
+      Aitor Viana 2010-03-08 - Changes performed so the Packet Store can be recovered when umounted
+      Aitor Viana 2010-03-08 - The OS_umount() function has now a parameter to KEEP or DELETE the file system
+      Aitor Viana 2010-03-05 - OS_psas_reset() and OS_psas_get_description() functions are now implemented
+      Aitor Viana 2010-03-05 renamed:
+      Aitor Viana 2010-03-01 - The OS_psas_status_report() function is implemented and tested
+      Aitor Viana 2010-03-01 - The throughput is calculated as well
+      Aitor Viana 2010-03-01 - Minor comments
+      Aitor Viana 2010-03-01 - The OS_psas_read() function is implemented. This service allows the user to
+      Aitor Viana 2010-03-01 modified:
+      Aitor Viana 2010-03-01 - The OS_psas_write service is implemented. The psas_format.c test is updated to
+      Aitor Viana 2010-03-01 - When the Packet Store is not to be formatted, we read the super block
+      Aitor Viana 2010-03-01 - Some comments removed (FIXMEs)
+      Aitor Viana 2010-03-01 - The Packet Store implementation is starting. So far the mount and umount
+      Aitor Viana 2010-02-25 - Warnings off
+      Aitor Viana 2010-02-24 - Warnings off
+      Aitor Viana 2010-02-24 modified:
+      Aitor Viana 2010-02-24 - Trying to make the memory allocator working properly
+      Aitor Viana 2010-02-24 modified:
+      Aitor Viana 2010-02-24 modified:
+      Aitor Viana 2010-02-24 added:
+      Aitor Viana 2010-02-22 renamed:
+      Aitor Viana 2010-02-19 - Critical section in some calls
+      Aitor Viana 2010-02-19 - Indent
+      Aitor Viana 2010-02-19 added:
+      Aitor Viana 2010-02-19 - A modification is being performed in the mm6165d driver. Now it is possible to
+      Aitor Viana 2010-02-19 - We use the destroy_mm6165() function when destroying the File system. This
+      Aitor Viana 2010-02-19 renamed:
+      Aitor Viana 2010-02-18 - Some bugs corrected
+      Aitor Viana 2010-02-18 - Some changes and bugs are corrected.
+      Aitor Viana 2010-02-18 - TRACE warnings out
+      Aitor Viana 2010-02-18 - Some structure names changed
+      Aitor Viana 2010-02-18 - RSP instead of pciram devices
+      Aitor Viana 2010-02-18 - Use ECC in the PCIRAM mass memory devices
+      Aitor Viana 2010-02-18 - stdint.h is needed
+      Aitor Viana 2010-02-18 - The mm6165d driver is not compiled. Is taken from libbackports
+      Aitor Viana 2010-02-18 - both nominal and redundant are mapped into a pciram device. The mm6165d driver
+      Aitor Viana 2010-02-18 - clear static variables...sanity
+      Aitor Viana 2010-02-17 - The OS_bli_register() is removed. In the OS_mount() function it is also passed
+      Aitor Viana 2010-02-17 - The precision is now from nanoseconds down to microseconds. This makes the
+      Aitor Viana 2010-02-17 - SPFS changed to ROFS
+      Aitor Viana 2010-02-17 - SPFS changed to ROFS
+      Aitor Viana 2010-02-17 renamed:
+      Aitor Viana 2010-02-17 - The file system has been moved from spfs directory to rofs
+      Aitor Viana 2010-02-17 - A return code changed in the OS_mount() function
+      Aitor Viana 2010-02-17 - Doxygen comments
+      Aitor Viana 2010-02-17 - It is possible to mount several remote mass memory devices (RSP) in different
+      Aitor Viana 2010-02-17 - The _get_new_volume() function was handling the 'devid' parameter wrongly
+      Aitor Viana 2010-02-17 - The tasks have the smae priority
+      Aitor Viana 2010-02-17 - Minimum 2 tasks created
+      Aitor Viana 2010-02-17 - The file has been adapted to use the devid identifier
+      Aitor Viana 2010-02-17 - Multiple file systems mass memory storages are supported. It is possible to
+      Aitor Viana 2010-02-17 - The file system structure (struct spfs) is now taken based on the mount point.
+      Aitor Viana 2010-02-17 - volname removed
+      Aitor Viana 2010-02-16 - Added a test that reads an already existing file system and prints all the
+      Aitor Viana 2010-02-16 - The OS_mount() function has new flag parameter called "format" that specifies
+      Aitor Viana 2010-02-16 - Clean the CPU usage report before starting
+      Aitor Viana 2010-02-16 modified:
+      Aitor Viana 2010-02-16 - Indent
+      Aitor Viana 2010-02-16 - The local file block device mapping from spfs to BLI is created so in linux we
+      Aitor Viana 2010-02-16 - The bandwidth test writes 10MB all time
+      Aitor Viana 2010-02-16 - An include file was needed
+      Aitor Viana 2010-02-16 - 512/1024 bytes block size depending on configuration
+      Aitor Viana 2010-02-16 - The error values changed to discovered which error is coming from which layer
+      Aitor Viana 2010-02-16 - The Spacewire MTU is now 2500 and works fine
+      Aitor Viana 2010-02-16 - DEBUG statements
+      Aitor Viana 2010-02-16 modified:
+      Aitor Viana 2010-02-16 modified:
+      Aitor Viana 2010-02-16 - The blocksize is taken from the configuration
+      Aitor Viana 2010-02-16 - The block size is only possible to be 512 or 1024
+      Aitor Viana 2010-02-16 - indent
+      Aitor Viana 2010-02-16 - 1024 bytes block size added
+      Aitor Viana 2010-02-16 - 1024 byte block size is added
+      Aitor Viana 2010-02-16 - indent
+      Aitor Viana 2010-02-16 - 1024 bytes block size for the local file block device
+      Aitor Viana 2010-02-15 - Several task writing in the file system to test the thread-safe capabilities
+      Aitor Viana 2010-02-15 - A new test is added to full the file system
+      Aitor Viana 2010-02-15 - 512 block size is the one working perfectly...
+      Aitor Viana 2010-02-15 - The OS_write() function changes the critical section handling
+      Aitor Viana 2010-02-15 - gettimeofday is not used anymore. Instead OS_GetLocalTime()
+      Aitor Viana 2010-02-15 modified:
+      Aitor Viana 2010-02-15 - A new test is added. This test creates two tasks which perform the bandwidth
+      Aitor Viana 2010-02-15 - We use all the PCIRAM memory
+      Aitor Viana 2010-02-15 - Configured to be accesing RASTA Eth and no Spacewire
+      Aitor Viana 2010-02-15 - _is_file_open() needs to be in critical section
+      Aitor Viana 2010-02-15 - TRACE statements removed
+      Aitor Viana 2010-02-15 - MAX_RSP_FRAME_LEN is now 2048 bytes
+      Aitor Viana 2010-02-15 - The RSP_BLOCKSIZE is taken from the configuration
+      Aitor Viana 2010-02-15 - Some variables are now local (static)
+      Aitor Viana 2010-02-15 - The file has been rename as it uses local RAM memory (not PCI accessible)
+      Aitor Viana 2010-02-15 - The pciram_xxxxx() functions added. These functions configure the Mass Memory
+      Aitor Viana 2010-02-15 - Use only the PCIRAM_xxxx parameters. Before references to LR_xxxx parameters
+      Aitor Viana 2010-02-15 - Some definitions were not used
+      Aitor Viana 2010-02-15 modified:
+      Aitor Viana 2010-02-12 - comments
+      Aitor Viana 2010-02-12 - comments
+      Aitor Viana 2010-02-12 - BREAK() points removed
+      Aitor Viana 2010-02-12 - Check that the directory is not in use when performing the OS_rmdir()
+      Aitor Viana 2010-02-12 - More checkin in the directory functions are added
+      Aitor Viana 2010-02-12 - OS_chdir implemented and working
+      Aitor Viana 2010-02-12 - some compilation warnings removed
+      Aitor Viana 2010-02-12 - Some warnings removed
+      Aitor Viana 2010-02-11 - The OS_find() function is now implemented
+      Aitor Viana 2010-02-11 - modified to include the clockbug.c sample in the core directory
+      Aitor Viana 2010-02-11 - The PTHREAD_STACK_MIN value cannot be 8192. Otherwise an error in when
+      Aitor Viana 2010-02-11 - The osfilapi.h header file is only included when the file system is compiled
+      Aitor Viana 2010-02-11 - The clockbug.c sample has been moved to the core directory. Also it has been
+      Aitor Viana 2010-02-10 modified:
+      Aitor Viana 2010-02-10 - The Local File Block Device added to the BLI
+      Aitor Viana 2010-02-09 [merge] added:
+      Aitor Viana 2010-02-09 added:
+      Aitor Viana 2010-02-09 [merge] - Merge from OSAL.spfs branch. This branch has included the filesystem within
+      Aitor Viana 2010-02-09 - The send_spw and recv_spw functions now only send/receive the specified amount
+      Aitor Viana 2010-02-09 - BLKLOG = 10 (1024 bytes) block size achieve 5.7 Mbps using SPFS and RFS
+      Aitor Viana 2010-02-09 - All the constants MAX_RSP_FRAME_LEN and PKTSIZE modified to work with 1KB
+      Aitor Viana 2010-02-09 - With a MTU of 1500 for SpW and 512 block size, the banwidth meassured with
+      Aitor Viana 2010-02-08 modified:
+      Aitor Viana 2010-02-08 - unused options removed
+      Aitor Viana 2010-02-08 - A variable was bad defined and errors during compilation were raised
+      Aitor Viana 2010-02-08 - The file_test.c modifed to include banwidth testing. This test works in SpW
+      Aitor Viana 2010-02-05 - Bug in the term function discovered. the rd.major and rd.minor need to be set
+      Aitor Viana 2010-02-05 - More examples in the file_test.c file.
+      Aitor Viana 2010-02-05 - The test location has been changed a little bit. Also some test names.
+      Aitor Viana 2010-02-05 - The BLI and the MM6165d drivers moved to the device 'dev' folder under the src
+      Aitor Viana 2010-02-04 - The spacewire link has been fixed and now the blockserver and the OSAL
+      Aitor Viana 2010-02-04 - alive task included in the MU blkserver
+      Aitor Viana 2010-02-04 - The MMU software has been integrated in the OSAL layer. The OSAL may be able
+      Aitor Viana 2010-02-04 removed:
+      Aitor Viana 2010-02-03 - Some mods in the DEBUG macros in order to avoid any error when working insided
+      Aitor Viana 2010-02-03 - Some bugs corrected. Those bugs made the SPFS code not working properly under
+      Aitor Viana 2010-02-03 - examples renamed to samples.
+      Aitor Viana 2010-02-02 renamed:
+      Aitor Viana 2010-01-29 removed:
+      Aitor Viana 2010-01-29 - The BLI from the previous mamma has been integrated with the OSAL filesystem
+      Aitor Viana 2010-01-29 renamed:
+      Aitor Viana 2010-01-26 - It is not needed the IMFS configuration anymore as SPFS is being used
+      Aitor Viana 2010-01-26 - the OS_lseek() returns the offset when success
+      Aitor Viana 2010-01-26 - Some defines changed to allow integration with the MAMMA code.
+      Aitor Viana 2010-01-26 - Unused sentences and some conditionals for the file system tests
+      Aitor Viana 2010-01-26 modified:
+      Aitor Viana 2010-01-25 - Some comments added
+      Aitor Viana 2010-01-22 - Comments
+      Aitor Viana 2010-01-22 - The testfs.c test now also test the OS_lseek() function
+      Aitor Viana 2010-01-22 - Comments
+      Aitor Viana 2010-01-22 - The OS_copy() function is implemented
+      Aitor Viana 2010-01-22 - The strcmp() function returns 0 in LINUX but -1 in RTEMS when testfs.c is
+      Aitor Viana 2010-01-22 - The spfs_rename() function is added
+      Aitor Viana 2010-01-22 modified:
+      Aitor Viana 2010-01-22 - The test has been modified. More error cases added
+      Aitor Viana 2010-01-22 - The OS_write() function was writing even when OS_READ_ONLY access was
+      Aitor Viana 2010-01-22 - The list.h header file added for double-linked lists
+      Aitor Viana 2010-01-19 - The SPFS has been integrated in OSAL
+      Aitor Viana 2010-01-18 - filetering-out some files when requested in configuration
+      Aitor Viana 2010-01-18 - The bli.h file added with the BLI function definition needed in the spfs-bli.c
+      Aitor Viana 2010-01-18 - Configuration options for the SPFS
+      Aitor Viana 2010-01-18 renamed:
+      Aitor Viana 2010-01-18 renamed:
+      Aitor Viana 2010-01-15 - The SPFS has been added to the OSAL layer.
+      Aitor Viana 2010-01-15 added:
+      Aitor Viana 2010-01-15 - Some unused variables deleted
+      Aitor Viana 2010-01-15 - The sporadic.c example no creates a number of task with incrementing
+      Aitor Viana 2010-01-14 - The ossem.c file has been modify correct the problem with the OS_BinSemFlush()
+      Aitor Viana 2010-01-14 modified:
+      Aitor Viana 2010-01-14 - A condition variable is used to synchronize the startup of all tasks. 
+      Aitor Viana 2010-01-14 - Comments
+      Aitor Viana 2010-01-14 modified:
+      Aitor Viana 2010-01-13 - OS_API_Init() changed to OS_Init()
+      Aitor Viana 2010-01-13 modified:
+      Aitor Viana 2010-01-13 - OS_TaskCreate() function has been modifed. Some bugs were discovered. The
+      Aitor Viana 2010-01-13 modified:
+      Aitor Viana 2010-01-13 - OS_TaskCreate() function has been modified. Some bugs were discovered and the
+      Aitor Viana 2010-01-13 - More error checking in the OS_TaskGetId() function
+      Aitor Viana 2010-01-13 - unused variable
+      Aitor Viana 2010-01-13 - OS_TaskInit() is called after all semaphore initialization
+      Aitor Viana 2010-01-13 - Unused variable out
+      Aitor Viana 2010-01-12 - The bug in OS_Sleep() and OS_uSleep() when '0' is passed is corrected under
+      Aitor Viana 2010-01-12 - The OS_uSleep() function had the same bug as OS_Sleep() when 'zero' parameter
+      Aitor Viana 2010-01-12 - A bug has been corrected in the ostime.c file when OS_Sleep() function is
+------------------------------------------------------------
+revno: 32 [merge]
+tags: SOIS_AFI
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2009-12-17 10:50:17 +0100
+message:
+  - merge
+  
+  added:
+    examples/socket/
+    examples/socket/socket.c
+    examples/socket/socket.h
+    examples/socket/soclient.c
+  pending merges:
+    Aitor Viana 2009-12-17 - Socket example added
+------------------------------------------------------------
+revno: 31 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2009-12-17 10:46:39 +0100
+message:
+  modified:
+    src/arch/sparc/leon3/rtems/bsp/bsp_glue.c
+  pending merges:
+    Aitor Viana 2009-12-17 - The GPTIMER_NUMBER_OF_TIMERS was not declared for leon3
+------------------------------------------------------------
+revno: 30 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2009-12-17 10:39:13 +0100
+message:
+  modified:
+    defs.mk
+  pending merges:
+    Aitor Viana 2009-12-17 modified:
+------------------------------------------------------------
+revno: 29 [merge]
+committer: Aitor Viana <aitor@rodano>
+branch nick: osal.trunk
+timestamp: Thu 2009-12-17 10:29:33 +0100
+message:
+  - Merge from devel branch
+  
+  removed:
+    samples/monotonic/
+    samples/suspend/
+  added:
+    examples/misc/osal_size.c
+    examples/misc/whets.c
+    examples/pool/memmgr.c
+    examples/semaphore/
+    examples/semaphore/counting.c
+    examples/wdog/
+    examples/wdog/watchdog.c
+    include/bsp/
+    include/bsp/bsp.h
+    include/osal/oserr.h
+    include/osal/osint.h
+    include/osal/osmemmgr.h
+    include/osal/osmut.h
+    include/osal/ospool.h
+    include/osal/osqueue.h
+    include/osal/ossem.h
+    include/osal/osstats.h
+    include/osal/ostask.h
+    include/osal/ostime.h
+    include/osal/ostimer.h
+    include/public/lock.h
+    scripts/
+    scripts/linkcmds.leon2
+    scripts/linkcmds.leon3
+    src/arch/sparc/common/rtems/
+    src/arch/x86/linux/bsp/bsp_glue.c
+    src/common/dummy.c
+    src/common/osmemmgr.c
+    src/common/osmisc.c
+    src/common/osstats.c
+  renamed:
+    include/osal/common_types.h => include/osal/ostypes.h
+    include/osal/osapi-debug.h => include/osal/osdebug.h
+    include/osal/osapi-hw-core.h => include/osal/oshwcore.h
+    include/osal/osapi-os-core.h => include/osal/oscore.h
+    include/osal/osapi-os-filesys.h => include/osal/osfilesys.h
+    include/osal/osapi-utils.h => include/osal/osutils.h
+    samples/ => examples/
+    samples/hello/ => examples/misc/
+    samples/monotonic/monotonic.c => examples/task/monotonic.c
+    samples/suspend/suspend.c => examples/task/suspend.c
+    samples/task/task.c => examples/task/sporadic.c
+    src/arch/sparc/common/bsp_voltab.c => src/arch/sparc/common/rtems/bsp_voltab.c
+    src/arch/sparc/common/drv_mgr_config.h => src/arch/sparc/common/rtems/drv_mgr_config.h
+    src/arch/sparc/common/osmemram.c => src/arch/sparc/common/rtems/osmemram.c
+    src/arch/sparc/common/rasta-rtems4.8/ => src/arch/sparc/common/rtems/rasta-rtems4.8/
+    src/arch/sparc/common/rasta-rtems4.8/leon3_drvmgr_config.c => src/arch/sparc/common/rtems/rasta-rtems4.8/leon3_drv_config.c
+    src/arch/sparc/common/rtems-config.c => src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/common/rtems-network.c => src/arch/sparc/common/rtems/rtems-network.c
+    src/arch/sparc/common/rtems4.10-network.c => src/arch/sparc/common/rtems/rtems4.10-network.c
+  modified:
+    ChangeLog
+    Doxyfile
+    Makefile
+    defs.mk
+    doc/Trailer.html
+    doc/osalTagfile.txt
+    examples/clockbug/clockbug.c
+    examples/file/file.c
+    examples/misc/hello.c
+    examples/pool/pool.c
+    examples/queue/prio_send.c
+    examples/rasta-spw/echoc.c
+    examples/rasta-spw/echos.c
+    examples/timer/linux_timer.c
+    examples/timer/timer.c
+    examples/timer/tod.c
+    include/osal/osapi.h
+    include/osal/osconfig.h
+    rules.cml
+    src/arch/sparc/common/rtems/rasta-rtems4.8/config.c
+    src/arch/sparc/leon2/rtems/bsp/bsp_glue.c
+    src/arch/sparc/leon3/rtems/bsp/bsp_glue.c
+    src/arch/x86/common/osmemram.c
+    src/arch/x86/linux/bsp/bsp_voltab.c
+    src/common/osecc.c
+    src/common/ospool.c
+    src/common/osutils.c
+    src/os/linux/osapi.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osfileapi.c
+    src/os/linux/osfilesys.c
+    src/os/linux/osint.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osnetwork.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/osx/osapi.c
+    src/os/rtems/osapi.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osfileapi.c
+    src/os/rtems/osfilesys.c
+    src/os/rtems/osint.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    include/osal/ostypes.h
+    include/osal/osdebug.h
+    include/osal/oshwcore.h
+    include/osal/oscore.h
+    include/osal/osfilesys.h
+    examples/task/monotonic.c
+    examples/task/suspend.c
+    examples/task/sporadic.c
+    src/arch/sparc/common/rtems/osmemram.c
+    src/arch/sparc/common/rtems/rasta-rtems4.8/leon3_drv_config.c
+    src/arch/sparc/common/rtems/rtems-config.c
+    src/arch/sparc/common/rtems/rtems-network.c
+    src/arch/sparc/common/rtems/rtems4.10-network.c
+  pending merges:
+    Aitor Viana 2009-12-17 modified:
+      Aitor Viana 2009-12-15 - Error in the memory manager default configuration
+      Aitor Viana 2009-12-15 - increase the number of default resources
+      Aitor Viana 2009-12-15 - The error codes have been renamed accordingly (OS_ERR_XXX)
+      Aitor Viana 2009-12-11 - The dummy.c source file contains all the mandatory symbols not defined by the
+      Aitor Viana 2009-12-04 - The Whetstone test is added to the OSAL
+      Aitor Viana 2009-12-04 - The watchdog.c example was with warnings
+      Aitor Viana Sanchez 2009-11-30 - Use sparc-rtems- for mkprom2
+      Aitor Viana Sanchez 2009-11-27 - The division factor is prescales+1
+      Aitor Viana Sanchez 2009-11-27 - Some compilation errors due to location change and directory name-change
+      Aitor Viana Sanchez 2009-11-27 - doxygen
+      Aitor Viana Sanchez 2009-11-27 - Name change for OS_BSP_* functions
+      Aitor Viana Sanchez 2009-11-27 renamed:
+      Aitor Viana Sanchez 2009-11-27 - Critical section added to the PC wdog implementation
+      Aitor Viana Sanchez 2009-11-27 - The OS_BSPWdog functions related to the watchdog managing has been
+      Aitor Viana Sanchez 2009-11-26 - bug fixing in the Wdog treatment. Now it is working
+      Aitor Viana Sanchez 2009-11-26 - The hardware frequency is provided for all architectures. It might be useful
+      Aitor Viana Sanchez 2009-11-25 - The compilation creates all the MKPROM images when possible
+      Aitor Viana Sanchez 2009-11-25 modified:
+      Aitor Viana Sanchez 2009-11-25 - The NASA headers added
+      Aitor Viana Sanchez 2009-11-16 modified:
+      Aitor Viana Sanchez 2009-11-16 - using nanosleep for all the time-related functions. This is done because it
+      Aitor Viana Sanchez 2009-11-04 added:
+      Aitor Viana Sanchez 2009-11-03 modified:
+      Aitor Viana Sanchez 2009-11-03 modified:
+      Aitor Viana Sanchez 2009-11-03 - Mods performed to allow the user to link the data pool associated to the
+      Aitor Viana Sanchez 2009-11-03 - Link examples to be used when linking the memory manager data in other
+      Aitor Viana Sanchez 2009-11-03 modified:
+      Aitor Viana Sanchez 2009-11-03 - The header files are adjusted to use libbackport when using RASTA
+      Aitor Viana Sanchez 2009-11-03 - Update the LEON3 initialization to be used with libbackport and RTEMS 4.8 and
+      Aitor Viana Sanchez 2009-11-03 renamed:
+      Aitor Viana Sanchez 2009-11-02 - lock_rw_init() returns 'status' instead of '-1'
+      Aitor Viana Sanchez 2009-11-02 - The print_rtems_ram_workspace() function prints also application workspace(s)
+      Aitor Viana Sanchez 2009-11-02 - the os_selection moved on top
+      Aitor Viana Sanchez 2009-11-02 - some test changed location/name
+      Aitor Viana Sanchez 2009-11-02 - OS_PoolInit() has to be defined when memory pools are not configured
+      Aitor Viana Sanchez 2009-11-02 - INTERNAL_MUTEX accounted in osconfig.h header file
+      Aitor Viana Sanchez 2009-11-02 added:
+      Aitor Viana Sanchez 2009-11-02 - The OSAL buffer pools and memory manager can be disabled using the
+      Aitor Viana Sanchez 2009-11-02 modified:
+      Aitor Viana Sanchez 2009-11-02 - The OSAL memory manager can be disabled
+      Aitor Viana Sanchez 2009-11-02 - rtems_ram_workspace global variable contains the RTEMS RAM workspace memory
+      Aitor Viana Sanchez 2009-11-02 - The print_rtems_ram_workspace() function is added. This function calculates
+      Aitor Viana Sanchez 2009-10-29 - Added to the defs.mk code to generate the libosal_dbg.a if DEBUG is
+      Aitor Viana Sanchez 2009-10-28 - the default install directory is /opt/osal
+      Aitor Viana Sanchez 2009-10-28 - OS_CountSemTryTake() implemented for LINUX
+      Aitor Viana Sanchez 2009-10-28 - The OS_CountSemTryTake() function has been implemented
+      Aitor Viana Sanchez 2009-10-28 modified:
+      Aitor Viana Sanchez 2009-10-28 modified:
+      Aitor Viana Sanchez 2009-10-28 added:
+      Aitor Viana Sanchez 2009-10-20 - The debug conditional compilation for the print-out messages is taken out
+      Aitor Viana Sanchez 2009-10-19 - RTEMS binary semaphores uses RTEMS_SIMPLE_BINARY_SEMAPHORE semaphores. That
+      Aitor Viana Sanchez 2009-10-19 - The error codes have been cleaned up.
+      Aitor Viana Sanchez 2009-10-17 - We always use the OSAL malloc/free mechanism
+      Aitor Viana Sanchez 2009-10-17 - Some warnings due type conversions solved
+      Aitor Viana Sanchez 2009-10-14 - memmgr.c sample is not compiled when RTOS malloc/free is configured
+      Aitor Viana Sanchez 2009-10-14 - the Mutex needed for thread-safe resourcing were under-calculated for RTEMS.
+      Aitor Viana Sanchez 2009-10-14 - inentation
+      Aitor Viana Sanchez 2009-10-14 - The statistics added to the OSAL library. When DEBUG is enabled the
+      Aitor Viana Sanchez 2009-10-14 - It is possible to select the RTOS malloc/free or the OSAL malloc/free
+      Aitor Viana Sanchez 2009-10-08 modified:
+      Aitor Viana Sanchez 2009-10-08 - The user has to define the variable char osal_ip_addr[] in order to configure
+      Aitor Viana Sanchez 2009-10-06 - The network IP is now configurable at compilation time
+      Aitor Viana Sanchez 2009-10-06 - The OS_GetErrorName() removed from osapi.c because implemented now in
+      Aitor Viana Sanchez 2009-10-06 - The UNUSED() macro is changed
+      Aitor Viana Sanchez 2009-10-06 - some error codes were duplicated
+      Aitor Viana Sanchez 2009-10-06 - error codes were duplicated.
+      Aitor Viana Sanchez 2009-10-06 - Unused variable warning
+      Aitor Viana Sanchez 2009-10-06 - OS_Sleep instead of OS_TaskDelay
+      Aitor Viana Sanchez 2009-10-05 - OS_USleep() -> OS_uSleep()
+      Aitor Viana Sanchez 2009-10-05 - OS_MicroSleep() changed to OS_USleep()
+      Aitor Viana Sanchez 2009-10-05 - The OS_TaskDelay() call has been replaced for OS_Sleep() and OS_MicroSleep()
+      Aitor Viana Sanchez 2009-10-02 - Some functions changed its name
+      Aitor Viana Sanchez 2009-10-01 - The OS_MemGarbageCollerctor() changed to OS_MemGarbageCollector()
+      Aitor Viana Sanchez 2009-10-01 - The OS_MemmgrDestroy() implemented but not quite working in RTEMS
+      Aitor Viana Sanchez 2009-10-01 - The memory manager configuration is included in rules.cml
+      Aitor Viana Sanchez 2009-10-01 - The pool example has been modified to better exercise the POOL API
+      Aitor Viana Sanchez 2009-10-01 - indentation
+      Aitor Viana Sanchez 2009-10-01 - The thread-safe mechanism is implemented now in a more modular way, making
+      Aitor Viana Sanchez 2009-10-01 - The header files have been restructured
+      Aitor Viana Sanchez 2009-10-01 - The network info is not printed here
+      Aitor Viana Sanchez 2009-10-01 - print-out network info if network configurd
+      Aitor Viana Sanchez 2009-10-01 - IP addresses fixed for RTEMS 4.8 and after
+      Aitor Viana Sanchez 2009-10-01 - The memory manager is done using the buddy memory allocation algorithm
+      Aitor Viana Sanchez 2009-10-01 - Function names changed to OS_Free() and OS_Malloc()
+      Aitor Viana Sanchez 2009-09-30 - The OSAL memory manager is added. Still not working perfectly
+      Aitor Viana Sanchez 2009-09-29 modified:
+      Aitor Viana Sanchez 2009-09-28 - Some warnings removed
+      Aitor Viana Sanchez 2009-09-28 - New file osmisc.c added to the project. This file will include miscellaneous
+      Aitor Viana Sanchez 2009-09-28 - The lock.h file included. This file provides read/write locks to make the
+      Aitor Viana Sanchez 2009-09-24 - Lots of compilation warnings removed
+------------------------------------------------------------
+revno: 28 [merge]
+committer: Aitor Viana Sanchez <aitor.viana.sanchez@esa.int
+branch nick: osal.trunk
+timestamp: Thu 2009-09-24 16:11:32 +0200
+message:
+  - See Changelog for details
+  
+  modified:
+    ChangeLog
+  pending merges:
+    Aitor Viana Sanchez 2009-09-24 modified:
+------------------------------------------------------------
+revno: 27 [merge]
+committer: Aitor Viana Sanchez <aitor.viana.sanchez@esa.int
+branch nick: osal.trunk
+timestamp: Thu 2009-09-24 16:11:08 +0200
+message:
+  - See Changelog for details
+  
+  removed:
+    src/os/rtems/timespec.c
+  added:
+    doc/
+    doc/Trailer.html
+    doc/osalTagfile.txt
+    include/glue/tod.h
+    samples/timer/tod.c
+    src/common/clocktodtoseconds.c
+    src/common/clocktodvalidate.c
+  renamed:
+    src/os/linux/osutils.c => src/common/osutils.c*
+  modified:
+    Doxyfile
+    defs.mk
+    include/osal/osapi-os-core.h
+    include/osal/osapi.h
+    samples/queue/prio_send.c
+    samples/task/task.c
+    samples/timer/linux_timer.c
+    samples/timer/timer.c
+    src/arch/sparc/common/rasta-rtems4.8/config.c
+    src/os/linux/osapi.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/rtems/osapi.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    src/common/osutils.c*
+  pending merges:
+    Aitor Viana Sanchez 2009-09-24 - Some FIXME(s) have been implemented
+      Aitor Viana Sanchez 2009-09-24 - Some FIXME(s) have been implemented
+      Aitor Viana Sanchez 2009-09-24 - Doxygen comments
+      Aitor Viana Sanchez 2009-09-24 - Some unuseful code removed from rtems/ostimer.c file
+      Aitor Viana Sanchez 2009-09-24 - Some sanity checks added to the OS_TimerFireWhen() function implementation.
+      Aitor Viana Sanchez 2009-09-24 - doxygen configuration
+      Aitor Viana Sanchez 2009-09-24 - The OS_TimerFireWhen() definition has changed in the osapi-os-core.h header
+      Aitor Viana Sanchez 2009-09-24 - OS_BinSemTake() function is fixed so it can work with the timers
+      Aitor Viana Sanchez 2009-09-24 - OS_TaskJoin() functio is created. This function is called by the OS_Start(),
+      Aitor Viana Sanchez 2009-09-23 modified:
+      Aitor Viana Sanchez 2009-09-23 - The OS_TimerFireAfter() function did not take any user parameter, now it does
+      Aitor Viana Sanchez 2009-09-23 - The task example added to the version control
+      Aitor Viana Sanchez 2009-09-23 - static routines out
+      Aitor Viana Sanchez 2009-09-23 modified:
+      Aitor Viana Sanchez 2009-09-23 - The OS_GetTimeOfDay() function is implemented in both RTEMS and LINUX.
+------------------------------------------------------------
+revno: 26 [merge]
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:33:58 +0200
+message:
+  modified:
+    defs.mk
+  pending merges:
+    aitor 2009-09-22 modified:
+------------------------------------------------------------
+revno: 25 [merge]
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:31:40 +0200
+message:
+  modified:
+    defs.mk
+  pending merges:
+    aitor 2009-09-22 - the demo sample is not compiled
+------------------------------------------------------------
+revno: 24
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:30:25 +0200
+message:
+  added:
+    samples/timer/timer.c
+------------------------------------------------------------
+revno: 23 [merge]
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:29:37 +0200
+message:
+  added:
+    include/public/
+  pending merges:
+    aitor 2009-09-22 added:
+------------------------------------------------------------
+revno: 22 [merge]
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:26:47 +0200
+message:
+  - merge from devel
+  
+  removed:
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+    arch/sparc/leon3/rtems/bsp/bsp_voltab.c
+    arch/sparc/leon3/rtems/bsp/drv_mgr_config.h
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/config.c
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/leon3_drv_config.c
+    arch/sparc/leon3/rtems/bsp/rtems-config.c
+    arch/sparc/leon3/rtems/bsp/rtems-network.c
+    arch/sparc/leon3/rtems/bsp/rtems4.10-network.c
+    build/
+    config/
+    config/Makefile
+    makefile
+    makefiles/
+    makefiles/Makefile.linux
+    makefiles/Makefile.rtems
+    osal.pro
+    samples/period/
+    samples/period/period.c
+  added:
+    Makefile
+    defs.mk
+    include/glue/
+    include/osal/
+    samples/monotonic/
+    samples/monotonic/monotonic.c
+    samples/pool/
+    samples/pool/pool.c
+    samples/queue/
+    samples/queue/prio_send.c
+    samples/rasta-spw/
+    samples/rasta-spw/echoc.c
+    samples/rasta-spw/echos.c
+    samples/suspend/
+    samples/suspend/suspend.c
+    samples/timer/
+    samples/timer/linux_timer.c
+    src/
+    src/arch/sparc/common/rasta-rtems4.8/config_gr_rasta_io.c
+    src/arch/sparc/common/rasta-rtems4.8/config_gr_rasta_tmtc.c
+    src/arch/sparc/common/rasta-rtems4.8/leon3_drvmgr_config.c
+    src/common/ospool.c
+    src/common/pool.h
+    src/glue/
+    src/glue/debug.c
+    src/os/linux/osutils.c
+  renamed:
+    arch => src/arch
+    arch/sparc/leon2/rtems/bsp/bsp_voltab.c => src/arch/sparc/common/bsp_voltab.c
+    arch/sparc/leon2/rtems/bsp/drv_mgr_config.h => src/arch/sparc/common/drv_mgr_config.h
+    arch/sparc/leon2/rtems/bsp/rasta-rtems4.10 => src/arch/sparc/common/rasta-rtems4.8
+    arch/sparc/leon2/rtems/bsp/rtems-config.c => src/arch/sparc/common/rtems-config.c
+    arch/sparc/leon2/rtems/bsp/rtems-network.c => src/arch/sparc/common/rtems-network.c
+    arch/sparc/leon2/rtems/bsp/rtems4.10-network.c => src/arch/sparc/common/rtems4.10-network.c
+    common => src/common
+    config/rules.cml => rules.cml
+    include/common_types.h => include/osal/common_types.h
+    include/osapi-compiler-switches.h => include/osal/osapi-compiler-switches.h
+    include/osapi-debug.h => include/osal/osapi-debug.h
+    include/osapi-hw-core.h => include/osal/osapi-hw-core.h
+    include/osapi-os-core.h => include/osal/osapi-os-core.h
+    include/osapi-os-filesys.h => include/osal/osapi-os-filesys.h
+    include/osapi-utils.h => include/osal/osapi-utils.h
+    include/osapi.h => include/osal/osapi.h
+    include/osconfig.h => include/osal/osconfig.h
+    os => src/os
+  modified:
+    .bzrignore
+    ChangeLog
+    Doxyfile
+    samples/clockbug/clockbug.c
+    samples/file/file.c
+    samples/hello/hello.c
+    src/arch/sparc/common/osmemram.c
+    src/arch/sparc/common/rasta-rtems4.8/config.c
+    src/arch/sparc/common/rasta-rtems4.8/leon2_drv_config.c
+    src/arch/sparc/common/rasta-rtems4.8/leon2_grlib_drv_config.c
+    src/arch/sparc/leon2/rtems/bsp/bsp_glue.c
+    src/arch/x86/common/osmemram.c
+    src/arch/x86/hal/osapiarch.c
+    src/arch/x86/linux/bsp/bsp_voltab.c
+    src/common/oscrc.c
+    src/common/osecc.c
+    src/os/linux/osapi.c
+    src/os/linux/oscountsem.c
+    src/os/linux/osfileapi.c
+    src/os/linux/osfilesys.c
+    src/os/linux/osint.c
+    src/os/linux/osmutsem.c
+    src/os/linux/osnetwork.c
+    src/os/linux/osqueue.c
+    src/os/linux/ossem.c
+    src/os/linux/ostask.c
+    src/os/linux/ostime.c
+    src/os/linux/ostimer.c
+    src/os/rtems/osapi.c
+    src/os/rtems/oscountsem.c
+    src/os/rtems/osfilesys.c
+    src/os/rtems/osint.c
+    src/os/rtems/osmut.c
+    src/os/rtems/osqueue.c
+    src/os/rtems/ossem.c
+    src/os/rtems/ostask.c
+    src/os/rtems/ostime.c
+    src/os/rtems/ostimer.c
+    src/arch/sparc/common/bsp_voltab.c
+    src/arch/sparc/common/drv_mgr_config.h
+    src/arch/sparc/common/rtems-config.c
+    src/arch/sparc/common/rtems-network.c
+    rules.cml
+    include/osal/common_types.h
+    include/osal/osapi-debug.h
+    include/osal/osapi-os-core.h
+    include/osal/osapi.h
+    include/osal/osconfig.h
+  unknown:
+    Makefile.rtems.leon3
+    config/
+    remote-commit.sh
+    remote-patch.sh
+    remote-update.sh
+    rules.out
+    tags
+    include/autoconf.h
+  pending merges:
+    aitor 2009-09-22 - when RASTA TestBed is not selected in the RTEMS Sparc menu configuration
+      aitor 2009-09-16 - Use __TOD_Validate function to perform sanity checks
+      aitor 2009-09-16 - Take out one of the compilation warnings
+      aitor 2009-09-16 - The OS_QueueGet() function returns OS_SUCCESS even when the returned message
+      aitor 2009-09-16 - Warnings taken out
+      aitor 2009-09-16 - The Queue API has been re-implemented in Linux and modified under RTEMS.
+      aitor 2009-09-16 - The OS_QUEUE_MSG_NORMAL and OS_QUEUE_MSG_URGENT flags are added to the
+      aitor 2009-09-14 - The timeout for the RTEMS monotonico calls is given in ticks, not in
+      aitor 2009-09-14 - Echo server/client applications added to the OSAL distribution
+      aitor 2009-09-14 - Included all the mods to work with the libbackport-4.10-4.8 library. This
+      aitor 2009-09-14 renamed:
+      aitor 2009-09-11 - The timespec_add_us() implementation has been changed because was behaving
+      aitor 2009-09-10 - In the end Monotornic task are created as normal tasks so they need to
+      aitor 2009-09-10 removed:
+      aitor 2009-09-10 modified:
+      aitor 2009-09-10 - There was a proble in the compilation and rtems-network.c and
+      aitor 2009-09-09 - There was an error in the timespec_add_us() function. The function sometimes
+      aitor 2009-09-09 - The OS_TaskMonotonicCreate() function has been added to the LINUX flavour.
+      aitor 2009-09-01 - Added the RASTA TMTC driver configuration when the user configures OSAL to
+      aitor 2009-08-31 - Modifications to work properly with the new RTEMS 4.10-tmtc version from gaisler.
+      aitor 2009-07-30 modified:
+      aitor 2009-07-30 - Encapsulate the critical areas wihtin brackets
+      aitor 2009-07-30 - OS_TaskSuspend and OS_TaskResume primitives added
+      aitor 2009-07-30 modified:
+      aitor 2009-07-21 - The OS_TaskExit and OS_TaskDelete function delete the associated monotonic
+      aitor 2009-07-21 - Doxygen comments
+      aitor 2009-07-21 - There was a bug in the OS_TaskMonotonicCreate() function. The function
+      aitor 2009-07-21 - The compilation options were wrong before. They have been fixed
+      aitor 2009-07-21 - Some of the thread function are static now so they are reachable always.
+      aitor 2009-07-20 - All the common configuration between LEON2 and LEON3 platforms moved to the
+      aitor 2009-07-20 - The thread-safe code is putting in blocks for better code-reading
+      aitor 2009-07-20 removed:
+      aitor 2009-07-20 - The OSAL Memory Pool API has been included
+      aitor 2009-07-20 - The header file location was changed to osal/header.h
+      aitor 2009-07-20 modified:
+      aitor 2009-07-20 - Compilation dependencies to compile LEON2 or LEON3 architecture
+      aitor 2009-07-20 - Resource in use return code added
+      aitor 2009-07-17 - OSAL header files under include/osal
+      aitor 2009-07-17 - The OSAL header files under the include/osal folder
+      aitor 2009-07-17 - The configuration has changed allowing enable/disable the RASTA related
+      aitor 2009-07-17 - Mods in the OS_TaskMonotonicCreate() function. The function receives as
+      aitor 2009-07-17 - Commented code that may be useful to print CPU usage
+      aitor 2009-07-17 - OS_TaskMonotonicCreate() function has been provided. This function allows the
+      aitor 2009-07-16 - The timer example had a bug. The timer ISR canno print out any message,
+      aitor 2009-07-16 - The timer example is in
+      aitor 2009-07-16 - Configuration parameter when using rtems4.10
+      aitor 2009-07-16 modified:
+      aitor 2009-07-16 removed:
+      aitor 2009-07-16 - osapi-debug.h header file included
+      aitor 2009-07-16 - The system assert is changhed to the ASSERT provided in osapi-debug.h
+      aitor 2009-07-16 modified:
+      aitor 2009-07-16 - osapi-debug.h header file not included here because it is included
+      aitor 2009-07-16 modified:
+      aitor 2009-07-16 - osapi-debug.h included
+      aitor 2009-07-16 - osapi-debug.h file included
+      aitor 2009-06-18 - In the default configuration when RTEMS is selected, some RASTA devices are
+      aitor 2009-06-18 - variable warning out.
+      aitor 2009-06-18 - There was a bug in the OS_TimerFireWhen() function raised by a warning. It is
+      aitor 2009-06-18 - New exmaple to make the LINUX timer example work. THe problem with the
+      aitor 2009-06-18 - Mods performed to adapt the LINUX OSAL to the new mods in the debug macros
+      aitor 2009-06-16 removed:
+      aitor 2009-06-16 - A new compilation model is added
+------------------------------------------------------------
+revno: 21
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-09-22 17:18:48 +0200
+message:
+  removed:
+    samples/timer/
+    samples/timer/compile.sh
+    samples/timer/timer.c
+------------------------------------------------------------
+revno: 20 [merge]
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-06-16 10:09:28 +0200
+message:
+  removed:
+    LICENSE.pdf
+    doc/
+    doc/doxygen/
+    doc/doxygen/Trailer.html
+    doc/doxygen/doxygenConfig.txt
+  added:
+    Doxyfile
+    LICENSE.pdf
+    arch/sparc/common/
+    arch/sparc/common/osmemram.c
+    arch/sparc/leon2/rtems/bsp/bsp_glue.c
+    arch/sparc/leon2/rtems/bsp/drv_mgr_config.h
+    arch/sparc/leon2/rtems/bsp/rasta-rtems4.10/
+    arch/sparc/leon2/rtems/bsp/rasta-rtems4.10/config.c
+    arch/sparc/leon2/rtems/bsp/rasta-rtems4.10/leon2_drv_config.c
+    arch/sparc/leon2/rtems/bsp/rasta-rtems4.10/leon2_grlib_drv_config.c
+    arch/sparc/leon2/rtems/bsp/rtems4.10-network.c
+    arch/sparc/leon3/
+    arch/sparc/leon3/hal/
+    arch/sparc/leon3/hal/osapiarch.c
+    arch/sparc/leon3/inc/
+    arch/sparc/leon3/inc/osplatform.h
+    arch/sparc/leon3/inc/osprocessor.h
+    arch/sparc/leon3/rtems/
+    arch/sparc/leon3/rtems/bsp/
+    arch/sparc/leon3/rtems/bsp/bsp_glue.c
+    arch/sparc/leon3/rtems/bsp/bsp_voltab.c
+    arch/sparc/leon3/rtems/bsp/drv_mgr_config.h
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/config.c
+    arch/sparc/leon3/rtems/bsp/rasta-rtems4.10/leon3_drv_config.c
+    arch/sparc/leon3/rtems/bsp/rtems-config.c
+    arch/sparc/leon3/rtems/bsp/rtems-network.c
+    arch/sparc/leon3/rtems/bsp/rtems4.10-network.c
+    arch/x86/common/
+    arch/x86/common/osmemram.c
+    common/
+    common/oscrc.c
+    common/osecc.c
+    include/osapi-utils.h
+    os/linux/oscountsem.c
+    os/linux/osint.c
+    os/linux/osmutsem.c
+    os/linux/osqueue.c
+    os/linux/ossem.c
+    os/linux/ostask.c
+    os/linux/ostime.c
+    os/linux/ostimer.c
+    os/rtems/oscountsem.c
+    os/rtems/oshandlers.c
+    os/rtems/osint.c
+    os/rtems/osmut.c
+    os/rtems/osqueue.c
+    os/rtems/ossem.c
+    os/rtems/ostask.c
+    os/rtems/ostime.c
+    os/rtems/ostimer.c
+    os/rtems/timespec.c
+    samples/bogomips/
+    samples/bogomips/COPYING
+    samples/bogomips/Changelog
+    samples/bogomips/Makefile
+    samples/bogomips/README
+    samples/bogomips/bogomips.1
+    samples/bogomips/bogomips.c
+    samples/bogomips/delay_386.c
+    samples/bogomips/delay_586.c
+    samples/bogomips/delay_alpha.c
+    samples/bogomips/delay_arm.S
+    samples/bogomips/delay_ia64.c
+    samples/bogomips/delay_parisc.c
+    samples/bogomips/delay_portable.c
+    samples/bogomips/delay_ppc.c
+    samples/bogomips/delay_sparc.c
+    samples/bogomips/delay_sparc64.c
+    samples/clockbug/
+    samples/clockbug/clockbug.c
+    samples/file/Makefile
+    samples/rootfs/
+    samples/rootfs/Makefile
+    samples/rootfs/file.c
+    samples/rootfs/rootfs/
+    samples/rootfs/rootfs/file.txt
+    samples/rootfs/rootfs/mnt/
+    samples/rootfs/rootfs/mnt/file.txt
+    samples/timer/
+    samples/timer/compile.sh
+    samples/timer/timer.c
+  renamed:
+    compile => makefiles
+  modified:
+    ChangeLog
+    Makefile.linux
+    Makefile.rtems
+    arch/sparc/leon2/rtems/bsp/bsp_voltab.c
+    arch/sparc/leon2/rtems/bsp/rtems-config.c
+    arch/sparc/leon2/rtems/bsp/rtems-network.c
+    arch/x86/linux/bsp/bsp_voltab.c
+    arch/x86/osx/bsp/bsp_voltab.c
+    config/rules.cml
+    include/common_types.h
+    include/osapi-compiler-switches.h
+    include/osapi-debug.h
+    include/osapi-hw-core.h
+    include/osapi-os-core.h
+    include/osapi-os-filesys.h
+    include/osapi.h
+    include/osconfig.h
+    makefile
+    os/linux/osapi.c*
+    os/linux/osfileapi.c*
+    os/linux/osfilesys.c*
+    os/linux/osnetwork.c*
+    os/osx/osapi.c
+    os/osx/osfileapi.c
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    os/rtems/osfilesys.c
+    samples/file/file.c
+  pending merges:
+    aitor 2009-06-15 - The OS_QueueGet function declaration changed in the header file, but the
+      Aitor Viana Sanchez 2009-05-15 - The function OS_GetTicksSinceBoot() is also implemented for rtems-4.6.
+      Aitor Viana Sanchez 2009-05-14 - Bug corrected
+      Aitor Viana Sanchez 2009-05-14 - All the default types defined before have been changed to stdint.h types.
+      Aitor Viana Sanchez 2009-05-12 - The OS Interrupt API is included in Linux but it is not implemented yet.
+      Aitor Viana Sanchez 2009-05-11 - Some RTEMS configuration parameters have changed trying to solve the problem
+      Aitor Viana Sanchez 2009-05-11 modified:
+      Aitor Viana Sanchez 2009-05-11 modified:
+      Aitor Viana Sanchez 2009-05-11 - New error codes inserted
+      Aitor Viana Sanchez 2009-05-11 - The timer implementation is on its way.
+      Aitor Viana Sanchez 2009-05-11 - Error control in the OS_API_Init function
+      Aitor Viana Sanchez 2009-05-11 - sem_wait is interruptible by a signal delivery. It is notified in the
+      Aitor Viana Sanchez 2009-05-07 - Mods performed to make OSAL working with RTEMS-4.10-tmtc version
+      Aitor Viana Sanchez 2009-04-09 - do not show the network routing table.
+      Aitor Viana Sanchez 2009-04-09 - Doxygen
+      Aitor Viana Sanchez 2009-04-09 added:
+      Aitor Viana Sanchez 2009-04-09 - In case only device files are needed the IMFS file system is disabled. The
+      Aitor Viana Sanchez 2009-04-09 modified:
+      Aitor Viana Sanchez 2009-04-09 modified:
+      Aitor Viana Sanchez 2009-04-09 modified:
+      Aitor Viana Sanchez 2009-04-09 - The file system API is tuned to work properly
+      Aitor Viana Sanchez 2009-04-09 - Extension handlers are provided in the OSAL. To activate the extension
+      Aitor Viana Sanchez 2009-04-09 - Some header files where not install (os-utils.h)
+      Aitor Viana Sanchez 2009-04-08 - RTEMS versioning handling added. Now OSAL is able to know which RTEMS version
+      Aitor Viana Sanchez 2009-04-08 - A new #define is defined RTEMS_VERSION_4_10. If the user wants to compile for
+      Aitor Viana Sanchez 2009-04-02 - Function naming changes
+      Aitor Viana Sanchez 2009-04-02 - ECC generation and check capabilities added to the OSAL common utils.
+      Aitor Viana Sanchez 2009-04-01 - CRC generation functions added.
+      Aitor Viana Sanchez 2009-04-01 - The OSAL common utils functions have been added.
+      Aitor Viana Sanchez 2009-04-01 renamed:
+      Aitor Viana Sanchez 2009-04-01 modified:
+      Aitor Viana Sanchez 2009-03-31 - OS_time_t class struct is now storing seconds and nanoseconds instead of
+      Aitor Viana Sanchez 2009-03-31 modified:
+      Aitor Viana Sanchez 2009-03-31 - New sample to identify a but in RTEMS added
+      Aitor Viana Sanchez 2009-03-30 modified:
+      Aitor Viana Sanchez 2009-03-30 modified:
+      Aitor Viana Sanchez 2009-03-30 - Doxygen
+      Aitor Viana Sanchez 2009-03-27 - The Hardware clock frequency is now considered in the RASTA configuration
+      Aitor Viana Sanchez 2009-03-27 - Some errors and warnings were removed.
+      Aitor Viana Sanchez 2009-03-27 - The RAM memory access interface has been added.
+      Aitor Viana Sanchez 2009-03-25 - Comments 
+      Aitor Viana Sanchez 2009-03-25 - Comments
+      Aitor Viana Sanchez 2009-03-25 - The OS_TimerFireWhen() function is implemented.
+      Aitor Viana Sanchez 2009-03-23 modified:
+      Aitor Viana Sanchez 2009-03-23 modified:
+      Aitor Viana Sanchez 2009-03-23 - Functions dependent from the operating system and the actual hardware that
+      Aitor Viana Sanchez 2009-03-11 - New error code OS_INVALID_PARAMETER is added
+      Aitor Viana Sanchez 2009-03-11 - OS_GetTicksSinceBoot() function changed to OS_GetTimeSinceBoot() name. The
+      Aitor Viana Sanchez 2009-03-11 - New configuration parameters for building the library
+      Aitor Viana Sanchez 2009-03-11 - Bug corrected in the OS_QueueGet() function.
+      Aitor Viana Sanchez 2009-03-11 - Bugs corrected for the LEON3 version.
+      Aitor Viana Sanchez 2009-03-11 - A bug was corrected. The sys_init() function wasn't found in the LEON3
+      Aitor Viana Sanchez 2009-03-03 - a problem with the system_init() function in RTEMS4.8 was found. It is now
+      Aitor Viana Sanchez 2009-03-03 - The merge from the osal-rtems4.10 branch is done
+      Aitor Viana Sanchez 2009-03-03 - Some warnings taken out
+      Aitor Viana Sanchez 2009-03-03 - OS_IntDisable() implemented
+      Aitor Viana Sanchez 2009-03-03 - doxygen comments
+      Aitor Viana Sanchez 2009-03-03 - assert macro corrected to eliminate the warnings.
+      Aitor Viana Sanchez 2009-03-03 - Doxygen configuration file added
+      Aitor Viana Sanchez 2009-03-02 - There was an error in the Os_API_Init() function. 'is_init' variable must be
+      Aitor Viana Sanchez 2009-02-25 modified:
+      Aitor Viana Sanchez 2009-03-03 - The configuration options for B1553RT IP core added.
+      Aitor Viana Sanchez 2009-03-03 - modifications in EFACEC
+      Aitor Viana Sanchez 2009-02-25 removed:
+      Aitor Viana Sanchez 2009-02-25 - OSAL distinguish now between LEON2 and LEON3 architectures
+      Aitor Viana Sanchez 2009-02-24 - When RTEMS 4.10, the HW is initialized inside OSAL
+      Aitor Viana Sanchez 2009-02-24 - LEON2_TARGET swapped to LEON2 label which is defined in bsp.h file
+      Aitor Viana Sanchez 2009-02-24 modified:
+      Aitor Viana Sanchez 2009-02-24 modified:
+      Aitor Viana Sanchez 2009-02-24 - some more configuration parameters added to try to work with rtems-4.10
+      Aitor Viana Sanchez 2009-02-24 modified:
+      Aitor Viana Sanchez 2009-02-24 - The hardware drivers are now selected from the menuconfig.
+      Aitor Viana Sanchez 2009-02-24 - The TMTC devices are only present in the rtems-4.10-tmtc distribution
+      Aitor Viana Sanchez 2009-02-24 - The drv_manager_confdefs.h file (in the RTEMS-4.10-TMTC) has changed his name
+      Aitor Viana Sanchez 2009-02-24 added:
+      Aitor Viana Sanchez 2009-02-24 - The OSAL for RTEMS 4.10 is now at least compiling, so do the exmaples.
+      Aitor Viana Sanchez 2009-02-24 added:
+      Aitor Viana Sanchez 2009-02-24 added:
+      Aitor Viana Sanchez 2009-02-24 modified:
+      Aitor Viana Sanchez 2009-02-19 modified:
+      Aitor Viana Sanchez 2009-02-19 - Doxy
+      Aitor Viana Sanchez 2009-02-19 - The RTEMS OSAL API has been split in different files, one per OSAL's API.
+      Aitor Viana Sanchez 2009-02-18 - Doxygen comments and bugging out
+      Aitor Viana Sanchez 2009-02-18 modified:
+      Aitor Viana Sanchez 2009-02-18 modified:
+      Aitor Viana Sanchez 2009-02-18 modified:
+      Aitor Viana Sanchez 2009-02-18 - The OSAL is split in many files.
+      Aitor Viana Sanchez 2009-02-18 modified:
+      Aitor Viana Sanchez 2009-02-18 removed:
+      Aitor Viana Sanchez 2009-02-18 - BOOLEAN type has changed.
+      Aitor Viana Sanchez 2009-02-18 - Doxygen comments
+      Aitor Viana Sanchez 2009-02-18 - Doxygen comments
+      Aitor Viana Sanchez 2009-02-18 modified:
+      Aitor Viana Sanchez 2009-02-18 - The OS_Start() now does not block the calling task in a semaphore. It deletes
+      Aitor Viana Sanchez 2009-02-18 - Simple comments substituted by double comments
+      Aitor Viana Sanchez 2009-02-18 - GetByName functions are not needed, removed from the library
+      Aitor Viana Sanchez 2009-02-05 modified:
+      Aitor Viana Sanchez 2009-01-30 - The mil-1553 is out of th OSAL project. Makes no sense to keep in
+      Aitor Viana Sanchez 2009-01-30 - If OSAL is re-initialzed, the OS_API_Init() function returns OS_SUCCESS
+      Aitor Viana Sanchez 2009-01-29 - One function was returning FALSE instead ERROR
+      Aitor Viana Sanchez 2009-01-29 - The function that initializes the RASTA HW is out of this file.
+      Aitor Viana Sanchez 2009-01-28 - The BRM configuration has been moved to the RASTA_BRM_Setup.c file.
+      Aitor Viana Sanchez 2009-01-27 modified:
+      Aitor Viana Sanchez 2009-01-27 - The Get function is already working but it is limited to 32 bus words. Has to
+      Aitor Viana Sanchez 2009-01-27 modified:
+      Aitor Viana Sanchez 2009-01-27 - do not use OS_printf()
+      Aitor Viana Sanchez 2009-01-27 - size_t is already defined in RTEMS
+      Aitor Viana Sanchez 2009-01-27 - hash table has been added for waiting EOT and waking from EOT.
+      Aitor Viana Sanchez 2009-01-26 modified:
+      Aitor Viana Sanchez 2009-01-26 modified:
+      Aitor Viana Sanchez 2009-01-23 removed:
+      Aitor Viana Sanchez 2009-01-23 removed:
+      Aitor Viana Sanchez 2009-01-23 modified:
+      Aitor Viana Sanchez 2009-01-23 modified:
+      Aitor Viana Sanchez 2009-01-23 - Better implementation to avoid preemption problems with the buffers.
+      Aitor Viana Sanchez 2009-01-23 - New IOCTL to wait for a specific frame number implemented.
+      Aitor Viana Sanchez 2009-01-23 modified:
+      Aitor Viana Sanchez 2009-01-23 - There was a problem when users wanted to push 1553 messages. While the 1553
+      Aitor Viana Sanchez 2009-01-23 -Bugs off from the Set_Subtmit() function
+      Aitor Viana Sanchez 2009-01-22 - Status return in the GetSet library is implemented. so far it's working but
+      Aitor Viana Sanchez 2009-01-22 modified:
+      Aitor Viana Sanchez 2009-01-22 - configuration parameters have been moved to other .h file.
+      Aitor Viana Sanchez 2009-01-22 - Warnings out
+      Aitor Viana Sanchez 2009-01-22 - mil1553_Set_Submit function has been added and tested (barely)
+      Aitor Viana Sanchez 2009-01-22 modified:
+      Aitor Viana Sanchez 2009-01-21 modified:
+      Aitor Viana Sanchez 2009-01-21 modified:
+      Aitor Viana Sanchez 2009-01-21 modified:
+      Aitor Viana Sanchez 2009-01-20 - Some functions names have changed.
+      Aitor Viana Sanchez 2009-01-16 - Communication and Synchronization Service and Time Service have been
+      Aitor Viana Sanchez 2009-01-16 modified:
+      Aitor Viana Sanchez 2009-01-16 modified:
+      Aitor Viana Sanchez 2009-01-16 - The user is able to synchronize to the 1553 cycle.
+      Aitor Viana Sanchez 2009-01-16 modified:
+      Aitor Viana Sanchez 2009-01-15 modified:
+      Aitor Viana Sanchez 2009-01-15 modified:
+      Aitor Viana Sanchez 2009-01-15 modified:
+      Aitor Viana Sanchez 2009-01-15 modified:
+      Aitor Viana Sanchez 2009-01-14 added:
+      Aitor Viana Sanchez 2009-01-14 added:
+      Aitor Viana Sanchez 2009-01-14 - Networking support has been added but will be removed in the future
+      Aitor Viana Sanchez 2009-01-14 - Ising timers
+      Aitor Viana Sanchez 2009-01-14 - The Timer interface has been added.
+      Aitor Viana Sanchez 2009-01-08 - Init task priority is higher
+      Aitor Viana Sanchez 2008-12-19 added:
+      Aitor Viana Sanchez 2008-12-19 added:
+      Aitor Viana Sanchez 2008-12-19 modified:
+      Aitor Viana Sanchez 2008-12-19 modified:
+      Aitor Viana Sanchez 2008-12-19 - OS_TaskExit() function returns a value.
+      Aitor Viana Sanchez 2008-12-19 - OS_TaskExit returns a value.
+      Aitor Viana Sanchez 2008-12-19 - THe posix configuration has been removed
+      Aitor Viana Sanchez 2008-12-18 removed:
+      Aitor Viana Sanchez 2008-12-18 removed:
+      Aitor Viana Sanchez 2008-12-17 - OS_TaskExit() returns a value. The value is meaninless in the Linux
+      Aitor Viana Sanchez 2008-12-16 - TS service has been added.
+      Aitor Viana Sanchez 2008-12-16 added:
+      Aitor Viana Sanchez 2008-12-16 - The times the minimum stack size is applied for all the tasks is now
+      Aitor Viana Sanchez 2008-12-16 modified:
+      Aitor Viana Sanchez 2008-12-09 modified:
+      Aitor Viana Sanchez 2008-12-09 - Include the type LOCAL in the sources. Is a typedef of static
+      Aitor Viana Sanchez 2008-12-09 - Modified the OUTBOUND of the configuration variables
+      Aitor Viana Sanchez 2008-11-28 modified:
+      Aitor Viana Sanchez 2008-11-27 modified:
+      Aitor Viana Sanchez 2008-11-27 modified:
+      Aitor Viana Sanchez 2008-11-27 modified:
+      Aitor Viana Sanchez 2008-11-27 - Example working. Still I do not know how to send rtom RT to BC
+      Aitor Viana Sanchez 2008-11-27 modified:
+      Aitor Viana Sanchez 2008-11-27 modified:
+      Aitor Viana Sanchez 2008-11-26 modified:
+      Aitor Viana Sanchez 2008-11-26 modified:
+      Aitor Viana Sanchez 2008-11-26 - Included the 1553 BC/RT sample
+      Aitor Viana Sanchez 2008-11-24 - Some bugs when compiling with sparc-rtems4.8 have been corrected.
+      Aitor Viana Sanchez 2008-11-24 - Downgrade
+      Aitor Viana Sanchez 2008-11-24 - Integer types have changed.
+      Aitor Viana Sanchez 2008-11-17 The OS_GetTicksSinceBoot() function has been introduced. Still not implemented
+      Aitor Viana Sanchez 2008-11-17 modified:
+      Aitor Viana Sanchez 2008-11-17 - comments.
+      Aitor Viana Sanchez 2008-11-17 - The OS_check_name_length() function is not called anymore.
+      Aitor Viana Sanchez 2008-11-06 modified:
+      Aitor Viana Sanchez 2008-11-06 modified:
+      Aitor Viana Sanchez 2008-11-06 - The file system implemente is working for Linux. 
+      Aitor Viana Sanchez 2008-11-06 - unused code out
+      Aitor Viana Sanchez 2008-11-06 - comments.
+      Aitor Viana Sanchez 2008-10-21 added:
+      Aitor Viana Sanchez 2008-10-20 modified:
+      Aitor Viana Sanchez 2008-10-16 - OS_Milli2Ticks() function is used in the OS_TaskDelay() instead of partially
+      Aitor Viana Sanchez 2008-10-14 modified:
+      Aitor Viana Sanchez 2008-10-14 - User extension have been introduced to handle INTERNAL fatal errors in RTEMS
+      Aitor Viana Sanchez 2008-10-02 modified:
+      Aitor Viana Sanchez 2008-10-02 modified:
+      Aitor Viana Sanchez 2008-10-02 added:
+      Aitor Viana Sanchez 2008-09-30 - Checks on the minimum priority has been performed.
+------------------------------------------------------------
+revno: 19
+committer: aitor <aitor@betis>
+branch nick: trunk
+timestamp: Tue 2009-06-16 10:08:22 +0200
+message:
+  modified:
+    LICENSE.pdf*
+------------------------------------------------------------
+revno: 18
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Thu 2008-10-02 12:19:46 +0200
+message:
+  added:
+    LICENSE.pdf
+------------------------------------------------------------
+revno: 17 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Mon 2008-09-29 09:58:36 +0200
+message:
+  modified:
+    Makefile.linux
+    Makefile.osx
+    arch/sparc/leon2/rtems/bsp/rtems-config.c
+    include/osapi-os-core.h
+    os/linux/osapi.c
+    os/osx/osapi.c
+    os/osx/osfileapi.c
+    os/osx/osfilesys.c
+    os/rtems/osapi.c
+  pending merges:
+    Aitor Viana Sanchez 2008-09-29 modified:
+      Aitor Viana Sanchez 2008-09-29 - The OS_MutSemTimedWait() function has been introduced for RTEMS and Linux
+      Aitor Viana Sanchez 2008-09-29 - The OS_MutSemTimedWait() function has been added and tested.
+      Aitor Viana Sanchez 2008-09-26 - The function OS_MutSemTimedWait() has been introduced for the RTEMS platform
+      Aitor Viana Sanchez 2008-09-23 - The MICROSECONDS_PER_TICK configuration parameter has been changed.
+      Aitor Viana Sanchez 2008-09-15 pending merges:
+      Aitor Viana Sanchez 2008-09-15 pending merges:
+      Aitor Viana Sanchez 2008-09-05 modified:
+      Aitor Viana Sanchez 2008-09-05 - Warnings out.
+      Aitor Viana Sanchez 2008-09-05 - Compilation warnings out.
+      Aitor Viana Sanchez 2008-09-05 modified:
+      Aitor Viana 2008-09-11 modified:
+      Aitor Viana 2008-09-11 modified:
+      Aitor Viana 2008-09-11 - The Mac OS X platform has been updated.
+------------------------------------------------------------
+revno: 16 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Thu 2008-09-04 09:40:25 +0200
+message:
+  modified:
+    samples/hello/hello.c
+    samples/period/period.c
+    samples/task/task.c
+------------------------------------------------------------
+revno: 15 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-09-03 17:13:13 +0200
+message:
+  added:
+    samples/period/
+    samples/period/period.c
+  modified:
+    Makefile.linux
+    Makefile.rtems
+    compile/Makefile.linux
+    compile/Makefile.rtems
+    include/osapi-os-core.h
+    include/osapi.h
+    os/linux/osapi.c
+    os/linux/osfileapi.c
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    samples/hello/hello.c*
+    samples/task/task.c*
+  pending merges:
+    Aitor Viana Sanchez 2008-09-03 added:
+      Aitor Viana Sanchez 2008-09-03 added:
+      Aitor Viana Sanchez 2008-09-03 added:
+      Aitor Viana Sanchez 2008-09-03 modified:
+      Aitor Viana Sanchez 2008-09-03 - GetIdByName functions are no longer available.
+      Aitor Viana Sanchez 2008-09-03 - Some error codes, NAME_TOO_LONG and NAME_TAKEN have been removed.
+      Aitor Viana Sanchez 2008-09-03 - The resource name is no longer used nor passed as a parameter.
+      Aitor Viana Sanchez 2008-09-03 modified:
+      Aitor Viana Sanchez 2008-09-03 - The function Tick2Micros() has been modified.
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 - The OS_queue_prop_t does not have name field any more.
+      Aitor Viana Sanchez 2008-09-01 modified:
+      Aitor Viana Sanchez 2008-09-01 - The resource naming is no longer use. Thus, the GetIdByName() resource
+      Aitor Viana Sanchez 2008-08-29 - The OS_TaskRegister() function has been convertd to private.
+      Aitor Viana Sanchez 2008-08-29 modified:
+      Aitor Viana Sanchez 2008-08-29 - comments.
+      Aitor Viana Sanchez 2008-08-29 - The resources no longer take the "resource name". The name field is still in
+      Aitor Viana Sanchez 2008-08-28 modified:
+      Aitor Viana Sanchez 2008-08-28 modified:
+      Aitor Viana Sanchez 2008-08-28 - New example added
+      Aitor Viana Sanchez 2008-08-27 modified:
+      Aitor Viana Sanchez 2008-08-27 modified:
+      Aitor Viana Sanchez 2008-08-27 - The name handling of the resources is now controlled in a better way.
+      Aitor Viana Sanchez 2008-08-27 modified:
+      Aitor Viana Sanchez 2008-08-15 modified:
+------------------------------------------------------------
+revno: 14 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Thu 2008-08-14 14:23:21 +0200
+message:
+  modified:
+    os/linux/osapi.c
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    os/rtems/osfilesys.c
+  pending merges:
+    Aitor Viana Sanchez 2008-08-14 modified:
+      Aitor Viana Sanchez 2008-08-14 - The // comments have been changed to /**/ comments.
+------------------------------------------------------------
+revno: 13 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Thu 2008-08-14 09:40:21 +0200
+message:
+  added:
+    compile/
+    compile/Makefile.linux
+    compile/Makefile.rtems
+  modified:
+    Makefile.linux
+    Makefile.rtems
+------------------------------------------------------------
+revno: 12 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-08-13 17:17:33 +0200
+message:
+  removed:
+    include/rtems-config.h
+    include/rtems-network.h
+  added:
+    .bzrignore
+    arch/sparc/leon2/rtems/bsp/rtems-config.c
+    arch/sparc/leon2/rtems/bsp/rtems-network.c
+    samples/task/
+    samples/task/task.c
+  modified:
+    INSTALL
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+    arch/sparc/leon2/hal/osapiarch.c
+    arch/sparc/leon2/rtems/bsp/bsp_voltab.c
+    config/rules.cml
+    doc/doxygen/doxygenConfig.txt
+    include/osapi-os-core.h
+    include/osapi.h
+    os/linux/osapi.c
+    os/linux/osfileapi.c
+    os/linux/osfilesys.c
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    os/rtems/osfilesys.c
+    osal.pro
+    samples/file/file.c
+    samples/hello/hello.c
+  pending merges:
+    Aitor Viana Sanchez 2008-08-13 - The OSAL file system API is implemented
+      Aitor Viana Sanchez 2008-08-13 added:
+      Aitor Viana Sanchez 2008-08-13 modified:
+      Aitor Viana Sanchez 2008-08-13 modified:
+      Aitor Viana Sanchez 2008-08-13 modified:
+      Aitor Viana Sanchez 2008-08-13 - comments.
+      Aitor Viana Sanchez 2008-08-13 modified:
+      Aitor Viana Sanchez 2008-08-12 added:
+      Aitor Viana Sanchez 2008-08-12 added:
+      Aitor Viana Sanchez 2008-08-12 added:
+      Aitor Viana Sanchez 2008-08-12 - The File system API can be configured from "make menuconfig". If disabled file
+      Aitor Viana Sanchez 2008-08-12 - The osapiarch.c source file has been taken out from the compilation chain
+      Aitor Viana Sanchez 2008-08-12 - The osnetwork.c source file has been taken out.
+      Aitor Viana Sanchez 2008-08-12 modified:
+      Aitor Viana Sanchez 2008-08-12 modified:
+      Aitor Viana Sanchez 2008-08-12 - UNUSED macro added to avoid warnings in the C code.
+      Aitor Viana Sanchez 2008-08-12 - Warnings off
+      Aitor Viana Sanchez 2008-08-12 - OS_NOT_SUPPORTED error code added.
+      Aitor Viana Sanchez 2008-08-12 - The OS_NOT_SUPPORTED error code added.
+      Aitor Viana Sanchez 2008-08-12 modified:
+      Aitor Viana Sanchez 2008-08-12 - In the configuration the OS_STATIC_RESOURCE_ALLOCATION option has been added.
+      Aitor Viana Sanchez 2008-08-12 modified:
+      Aitor Viana Sanchez 2008-08-12 - Some compilation "warnings" have been taken out.
+      Aitor Viana Sanchez 2008-08-12 - The OS_TaskCreate() function does not need the task_pointer, we made it NULL.
+      Aitor Viana Sanchez 2008-08-12 modified:
+      Aitor Viana Sanchez 2008-08-11 removed:
+      Aitor Viana Sanchez 2008-08-11 - New sample has been added.
+      Aitor Viana Sanchez 2008-08-11 - comments
+      Aitor Viana Sanchez 2008-08-11 modified:
+      Aitor Viana Sanchez 2008-08-11 modified:
+      Aitor Viana Sanchez 2008-08-08 removed:
+      Aitor Viana Sanchez 2008-08-07 modified:
+      Aitor Viana Sanchez 2008-08-07 modified:
+      Aitor Viana Sanchez 2008-08-07 modified:
+      Aitor Viana Sanchez 2008-08-07 - Some bugs in the OS_creat, OS_open, OS_remove function removed
+      Aitor Viana Sanchez 2008-08-07 - The OS_mkfs() function implemented and working
+      Aitor Viana Sanchez 2008-08-07 modified:
+      Aitor Viana Sanchez 2008-08-07 - The user application using the OSAL only need to define the main() function.
+      Aitor Viana Sanchez 2008-08-07 removed:
+      Aitor Viana Sanchez 2008-08-06 modified:
+      Aitor Viana Sanchez 2008-08-06 modified:
+      Aitor Viana Sanchez 2008-08-06 - Function comments.
+      Aitor Viana Sanchez 2008-08-06 - doxygen
+      Aitor Viana Sanchez 2008-08-06 modified:
+      Aitor Viana Sanchez 2008-08-06 - function comments
+      Aitor Viana Sanchez 2008-08-06 - devel issue1.0 revision 6.0
+------------------------------------------------------------
+revno: 11 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-08-06 10:57:24 +0200
+message:
+  - Trunk issue 1.0 revision 6.0
+  
+  modified:
+    INSTALL
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+    arch/sparc/leon2/rtems/bsp/bsp_voltab.c
+    include/common_types.h
+    include/osapi-compiler-switches.h
+    include/osapi-debug.h
+    include/osapi-hw-core.h
+    include/osapi-os-core.h
+    include/osapi-os-filesys.h
+    include/osapi.h
+    include/osconfig.h
+    include/rtems-config.h
+    os/linux/osapi.c
+    os/linux/osfileapi.c
+    os/linux/osfilesys.c
+    os/osx/osapi.c
+    os/osx/osfileapi.c
+    os/osx/osfilesys.c
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    os/rtems/osfilesys.c
+    osal.pro
+    samples/file/file.c
+    samples/hello/hello.c
+  pending merges:
+    Aitor Viana Sanchez 2008-08-06 - Updated
+      Aitor Viana Sanchez 2008-08-06 - Merge errors solved.
+      Aitor Viana Sanchez 2008-08-06 - OSAL release issue 1.0 rev. 6.0
+      Aitor Viana Sanchez 2008-08-06 - Returning error codes changed.
+      Aitor Viana Sanchez 2008-08-05 - Some unimplemented functions return OS_ERROR instead of OS_SUCCESS
+      Aitor Viana Sanchez 2008-08-05 - Some return values have changed.
+      Aitor Viana Sanchez 2008-08-04 modified:
+      Aitor Viana Sanchez 2008-08-04 modified:
+      Aitor Viana Sanchez 2008-08-04 - The OS_MutSemTryTake function was not implemented in the OSX architecture.
+      Aitor Viana Sanchez 2008-08-04 - The OS_MutSemTryTake function was not implemented in the Linux architecture.
+      Aitor Viana Sanchez 2008-08-06 modified:
+      Aitor Viana Sanchez 2008-08-06 - OS_GetErrorName function updated.
+      Aitor Viana Sanchez 2008-08-06 - OS_GetErrorName function updated.
+      Aitor Viana Sanchez 2008-08-06 - The OS_FSGetErrorName function has been removed.
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - OS_TIME_NOT_SET error value included
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - The OS_SetLocalTime function in RTEMS has been disabled and allways returns
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - Function comments
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - The FPU functions have been removed.
+      Aitor Viana Sanchez 2008-08-05 - The interrupt handling functions have been implemented in the RTEMS platform
+      Aitor Viana Sanchez 2008-08-05 - Interrupt handling functions has been added.
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - OS_Ticks2Micros and OS_Milli2Ticks functions return uint32
+      Aitor Viana Sanchez 2008-08-05 - The OS_Milli2Ticks and OS_Ticks2Micros functions return uint32 value.
+      Aitor Viana Sanchez 2008-08-05 modified:
+      Aitor Viana Sanchez 2008-08-05 - OS_API_Init and OS_Start functions now return status values.
+      Aitor Viana Sanchez 2008-08-05 - OS_CompAbsDelayedTime is not used anymore.
+      Aitor Viana Sanchez 2008-08-05 - Changes in OS_FP_DISABLE and OS_FP_ENABLE flags
+      Aitor Viana Sanchez 2008-08-05 - In the OS_TaskCreate function, all the tasks are now created FP tasks. If the
+      Aitor Viana Sanchez 2008-08-05 - The OS_TaskDelay function is implemented using RTEMS native calls.
+      Aitor Viana Sanchez 2008-08-05 - some functions now return OS_UNIMPLEMENTED instead of OS_SUCCESS.
+      Aitor Viana Sanchez 2008-08-05 - The OS_TaskCreate function in OSX and Linux passes the 'arg' argument to the
+      Aitor Viana Sanchez 2008-08-04 - New error code OS_SEM_NOT_AVAILABLE added
+      Aitor Viana Sanchez 2008-08-04 - Bug Fixing and code comments.
+      Aitor Viana Sanchez 2008-08-04 modified:
+      Aitor Viana Sanchez 2008-08-04 - OS_MutSemTryTake funcion has been implemented in both linux and OSX
+      Aitor Viana Sanchez 2008-08-04 - Volume table for RTEMS
+      Aitor Viana Sanchez 2008-08-04 - Preliminary implementation of the mkfs and mount functions
+      Aitor Viana Sanchez 2008-08-04 - File API exmaple.
+      Aitor Viana Sanchez 2008-08-04 - THe OS_GetErrorName function modified to add new error conditions.
+      Aitor Viana Sanchez 2008-08-04 - The OS_GetErrorName function is modified to add new error values.
+      Aitor Viana Sanchez 2008-08-04 - The device driver table is "OWN" declared
+      Aitor Viana Sanchez 2008-08-04 - os_fs_err_t type is now os_err_t
+      Aitor Viana Sanchez 2008-08-04 modified:
+      Aitor Viana Sanchez 2008-08-04 modified:
+      Aitor Viana Sanchez 2008-07-18 - Chage in some return codes.
+      Aitor Viana Sanchez 2008-07-17 modified:
+      Aitor Viana Sanchez 2008-07-17 modified:
+      Aitor Viana Sanchez 2008-07-17 - Change in the return codes management.
+      Aitor Viana Sanchez 2008-07-17 - Changes in the return codes management
+      Aitor Viana Sanchez 2008-07-17 - The functions return Return_T type now
+      Aitor Viana Sanchez 2008-07-17 - The functions return Return_T type now
+      Aitor Viana Sanchez 2008-07-17 - New return codes are now centralized.
+      Aitor Viana Sanchez 2008-07-17 - The return codes has been changed.
+      Aitor Viana Sanchez 2008-07-17 - The task API functions have been commented.
+      Aitor Viana Sanchez 2008-07-17 modified:
+      Aitor Viana Sanchez 2008-07-17 - The mutual exclusion semaphore API is implemented now using the native RTEMS
+      Aitor Viana Sanchez 2008-07-17 - The mutual exclusion of the OSAL resources is handled using native RTEMS
+      Aitor Viana Sanchez 2008-07-17 - The mutual exclusion to the fileapi resources is now implemented using native
+      Aitor Viana Sanchez 2008-07-16 - Comments.
+      Aitor Viana Sanchez 2008-07-16 - The OS_FS_Init() function declaration has been added. The function definition
+      Aitor Viana Sanchez 2008-07-16 modified:
+      Aitor Viana Sanchez 2008-07-16 - Comments.
+      Aitor Viana Sanchez 2008-07-16 - Some comments.
+------------------------------------------------------------
+revno: 10 [merge]
+tags: issue-1.0_revision-3.0
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-07-16 12:37:20 +0200
+message:
+  - OSAL software issue 1.0 revision 3.0 released
+  
+  added:
+    build/
+  modified:
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+------------------------------------------------------------
+revno: 9 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-07-16 10:54:48 +0200
+message:
+  - Release issue 1.0 revision 3.0 is released
+------------------------------------------------------------
+revno: 8 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Wed 2008-07-16 10:28:43 +0200
+message:
+  - The default installation folder is /osal
+  - The installation directory might be changed defining the INSTALL_ROOT
+  environment variable.
+  
+  modified:
+    INSTALL
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+    osal.pro
+------------------------------------------------------------
+revno: 7 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Tue 2008-07-15 17:45:12 +0200
+message:
+  - working on the issue 1.0 revision 3.0 to be released
+  
+  added:
+    Makefile.linux
+    Makefile.osx
+    Makefile.rtems
+  modified:
+    makefile
+------------------------------------------------------------
+revno: 6 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Tue 2008-07-15 17:37:37 +0200
+message:
+  pending merges:
+    Aitor Viana Sanchez 2008-07-15 Aitor Viana Sanchez 2008-07-15 - Preparing the issue 1.0 revision 3.0
+      Aitor Viana Sanchez 2008-07-15 pending merges:
+      Aitor Viana Sanchez 2008-07-15 removed:
+      Aitor Viana Sanchez 2008-07-15 removed:
+      Aitor Viana Sanchez 2008-07-15 removed:
+      Aitor Viana Sanchez 2008-07-15 - Preparing the issue 1.0 revision 3.0
+      Aitor Viana Sanchez 2008-07-15 - Preparing the issue 1.0 rev. 3.0
+------------------------------------------------------------
+revno: 5 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Tue 2008-07-15 17:29:18 +0200
+message:
+  - Preparing the issue 1.0 rev. 3.0
+  
+  removed:
+    RegressionTestReport.html
+    RegressionTestReportRTEMS.doc
+    arch/sparc/leon2/rtems/bsp/main.c
+    arch/sparc/leon2/rtems/bsp/rtems-network.h
+    arch/sparc/leon2/rtems/bsp/rtems_config.h
+    arch/sparc/leon2/rtems/exe/
+    arch/sparc/leon2/rtems/make/
+    arch/sparc/leon2/rtems/make/config.mak
+    arch/sparc/leon2/rtems/make/stdtask.mak
+    arch/x86/pc/
+    arch/x86/pc/hal/
+    arch/x86/pc/hal/osapiarch.c
+    arch/x86/pc/inc/
+    arch/x86/pc/inc/osplatform.h
+    arch/x86/pc/inc/osprocessor.h
+    arch/x86/pc/linux/
+    arch/x86/pc/linux/bsp/
+    arch/x86/pc/linux/bsp/bsp_voltab.c
+    arch/x86/pc/linux/bsp/main.c
+    arch/x86/pc/linux/exe/
+    arch/x86/pc/linux/make/
+    arch/x86/pc/linux/make/config.mak
+    arch/x86/pc/linux/make/stdtask.mak
+    arch/x86/pc/osx/
+    arch/x86/pc/osx/bsp/
+    arch/x86/pc/osx/bsp/bsp_voltab.c
+    arch/x86/pc/osx/bsp/main.c
+    arch/x86/pc/osx/exe/
+    arch/x86/pc/osx/make/
+    arch/x86/pc/osx/make/config.mak
+    arch/x86/pc/osx/make/stdtask.mak
+  added:
+    arch/x86/hal/
+    arch/x86/hal/osapiarch.c
+    arch/x86/inc/
+    arch/x86/inc/osplatform.h
+    arch/x86/inc/osprocessor.h
+    arch/x86/linux/
+    arch/x86/linux/bsp/
+    arch/x86/linux/bsp/bsp_voltab.c
+    arch/x86/osx/
+    arch/x86/osx/bsp/
+    arch/x86/osx/bsp/bsp_voltab.c
+    arch/x86/osx/exe/
+    arch/x86/osx/make/
+    arch/x86/osx/make/config.mak
+    arch/x86/osx/make/stdtask.mak
+    include/rtems-config.h
+    include/rtems-network.h
+  modified:
+    ChangeLog
+    makefile
+    osal.pro
+    samples/file/file.c
+    samples/hello/hello.c
+  pending merges:
+    Aitor Viana Sanchez 2008-07-15 - Preparing the issue-1.0 rev-3.0
+      Aitor Viana Sanchez 2008-07-15 modified:
+      Aitor Viana Sanchez 2008-07-15 - RTEMS main function
+      Aitor Viana Sanchez 2008-07-15 - Compilation ready for RTEMS
+      Aitor Viana Sanchez 2008-07-15 removed:
+      Aitor Viana Sanchez 2008-07-10 modified:
+      Aitor Viana Sanchez 2008-07-10 added:
+      Aitor Viana Sanchez 2008-07-10 - The OSAL does not provide anymore the main function. Will the application
+      Aitor Viana Sanchez 2008-07-10 removed:
+      Aitor Viana Sanchez 2008-07-10 modified:
+      Aitor Viana Sanchez 2008-07-10 removed:
+      Aitor Viana Sanchez 2008-07-10 - Unused directories removed
+------------------------------------------------------------
+revno: 4 [merge]
+committer: Aitor Viana <aitor@aitor-vianas-macbook-air.local>
+branch nick: trunk
+timestamp: Sun 2008-07-13 17:00:33 +0200
+message:
+  removed:
+    prolog.mak
+------------------------------------------------------------
+revno: 3 [merge]
+tags: issue1.rev3
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Thu 2008-07-10 15:01:13 +0200
+message:
+  - For this new relase the compilation mechanism is improved, still based on
+  qmake
+  - the unitary tests are removed from the OSAL distribution and will be provided
+  as a separate package.
+  
+  removed:
+    samples/
+    samples/hello/
+    samples/hello/README.txt
+    samples/hello/hello.c
+    samples/libsample/
+    samples/libsample/Makefile
+    samples/libsample/hello.c
+    samples/testsuite/
+    samples/testsuite/TestCase.cpp
+    samples/testsuite/TestCase.h
+    samples/testsuite/TestCaseBinarySemInterface.cpp
+    samples/testsuite/TestCaseBinarySemInterface.h
+    samples/testsuite/TestCaseCountSemaphoreInterface.cpp
+    samples/testsuite/TestCaseCountSemaphoreInterface.h
+    samples/testsuite/TestCaseMutexInterface.cpp
+    samples/testsuite/TestCaseMutexInterface.h
+    samples/testsuite/TestCaseQueueInterface.cpp
+    samples/testsuite/TestCaseQueueInterface.h
+    samples/testsuite/TestCaseTaskInterface.cpp
+    samples/testsuite/TestCaseTaskInterface.h
+    samples/testsuite/TestCaseTimeInterface.cpp
+    samples/testsuite/TestCaseTimeInterface.h
+    samples/testsuite/TestConstants.h
+    samples/testsuite/TestRunner.cpp
+    samples/testsuite/TestSuite.cpp
+    samples/testsuite/TestSuite.h
+    samples/testsuite/TestUtilities.cpp
+    samples/testsuite/TestUtilities.h
+  added:
+    samples/
+    samples/file/
+    samples/file/file.c
+    samples/hello/
+    samples/hello/hello.c
+  modified:
+    ChangeLog
+    INSTALL
+    makefile
+    osal.pro
+------------------------------------------------------------
+revno: 2 [merge]
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Mon 2008-06-16 12:03:59 +0200
+message:
+  - The compilation mechanism has been changed. Now qmake is used to generate the
+  Makefile's
+  - The rtems_config.h has been modified to eliminate a compilation warning.
+  Nothing fancy.
+  
+  removed:
+    arch/makefile
+    arch/sparc/leon2/hal/makefile
+    arch/sparc/leon2/makefile
+    arch/sparc/leon2/rtems/bsp/makefile
+    arch/sparc/leon2/rtems/exe/makefile
+    arch/sparc/leon2/rtems/makefile
+    arch/sparc/makefile
+    arch/x86/makefile
+    arch/x86/pc/hal/makefile
+    arch/x86/pc/linux/bsp/makefile
+    arch/x86/pc/linux/exe/makefile
+    arch/x86/pc/linux/makefile
+    arch/x86/pc/makefile
+    arch/x86/pc/osx/bsp/makefile
+    arch/x86/pc/osx/exe/makefile
+    arch/x86/pc/osx/makefile
+    config/apps.cml
+    config/config.out
+    config/osx/
+    config/osx/osx.cml
+    config/rasta.cml
+    config/rules.out
+    config/sparc/
+    config/sparc/sparc.cml
+    config/x86/
+    config/x86/x86.cml
+    libosal/
+    libosal/README.txt
+    os/linux/makefile
+    os/makefile
+    os/osx/makefile
+    os/rtems/makefile
+    samples/hello/makefile
+    samples/makefile
+    samples/testsuite/makefile
+  added:
+    osal.pro
+  modified:
+    INSTALL
+    arch/sparc/leon2/rtems/bsp/rtems_config.h
+    config/Makefile
+    config/rules.cml
+    makefile
+  pending merges:
+    Aitor Viana Sanchez 2008-06-16 The compilation system has been changed. Now we use qmake to generate
+      Aitor Viana Sanchez 2008-06-16 Adding new features to the makefile.
+      Aitor Viana Sanchez 2008-06-16 modified:
+      Aitor Viana Sanchez 2008-06-16 libosal folder has been removed
+      Aitor Viana Sanchez 2008-06-16 Modifications in the qmake compilation options to cope with the RTEMS
+      Aitor Viana Sanchez 2008-06-16 All the makefiles has been removed. They are not used any more.
+      Aitor Viana Sanchez 2008-06-16 New features in the qmake installation procedure.
+      Aitor Viana Sanchez 2008-06-16 Some bugs in the qmake compilation chain has been fixed for the Linux hosts.
+      Aitor Viana 2008-06-14 OSAL configuration has changed. Now we only configure the host operating system.
+      Aitor Viana 2008-06-14 The OSAL configuration has changed.
+      Aitor Viana 2008-06-14 Comments and updates on the qmake compilaiton
+      Aitor Viana Sanchez 2008-06-06 - Modifications in the installation procedure.
+      Aitor Viana Sanchez 2008-06-06 Include the install option to the makefile
+      Aitor Viana 2008-06-14 The makefile is modified in order to use only the menuconfig option
+      Aitor Viana 2008-06-14 Added qmake compilation support.
+------------------------------------------------------------
+revno: 1
+tags: issue1.rev0
+committer: Aitor Viana Sanchez <aitor@rodano>
+branch nick: trunk
+timestamp: Fri 2008-05-23 11:36:29 +0200
+message:
+  Initial OSAL version.
+  This version was give to SciSys for the SOIS reference implementation.
+  
+  added:
+    ChangeLog
+    INSTALL
+    RegressionTestReport.html
+    RegressionTestReportRTEMS.doc
+    arch/
+    arch/makefile
+    arch/sparc/
+    arch/sparc/leon2/
+    arch/sparc/leon2/hal/
+    arch/sparc/leon2/hal/makefile
+    arch/sparc/leon2/hal/osapiarch.c
+    arch/sparc/leon2/inc/
+    arch/sparc/leon2/inc/osplatform.h
+    arch/sparc/leon2/inc/osprocessor.h
+    arch/sparc/leon2/makefile
+    arch/sparc/leon2/rtems/
+    arch/sparc/leon2/rtems/bsp/
+    arch/sparc/leon2/rtems/bsp/bsp_voltab.c
+    arch/sparc/leon2/rtems/bsp/main.c
+    arch/sparc/leon2/rtems/bsp/makefile
+    arch/sparc/leon2/rtems/bsp/rtems-network.h
+    arch/sparc/leon2/rtems/bsp/rtems_config.h
+    arch/sparc/leon2/rtems/exe/
+    arch/sparc/leon2/rtems/exe/makefile
+    arch/sparc/leon2/rtems/make/
+    arch/sparc/leon2/rtems/make/config.mak
+    arch/sparc/leon2/rtems/make/stdtask.mak
+    arch/sparc/leon2/rtems/makefile
+    arch/sparc/makefile
+    arch/x86/
+    arch/x86/makefile
+    arch/x86/pc/
+    arch/x86/pc/hal/
+    arch/x86/pc/hal/makefile
+    arch/x86/pc/hal/osapiarch.c
+    arch/x86/pc/inc/
+    arch/x86/pc/inc/osplatform.h
+    arch/x86/pc/inc/osprocessor.h
+    arch/x86/pc/linux/
+    arch/x86/pc/linux/bsp/
+    arch/x86/pc/linux/bsp/bsp_voltab.c
+    arch/x86/pc/linux/bsp/main.c
+    arch/x86/pc/linux/bsp/makefile
+    arch/x86/pc/linux/exe/
+    arch/x86/pc/linux/exe/makefile
+    arch/x86/pc/linux/make/
+    arch/x86/pc/linux/make/config.mak
+    arch/x86/pc/linux/make/stdtask.mak
+    arch/x86/pc/linux/makefile
+    arch/x86/pc/makefile
+    arch/x86/pc/osx/
+    arch/x86/pc/osx/bsp/
+    arch/x86/pc/osx/bsp/bsp_voltab.c
+    arch/x86/pc/osx/bsp/main.c
+    arch/x86/pc/osx/bsp/makefile
+    arch/x86/pc/osx/exe/
+    arch/x86/pc/osx/exe/makefile
+    arch/x86/pc/osx/make/
+    arch/x86/pc/osx/make/config.mak
+    arch/x86/pc/osx/make/stdtask.mak
+    arch/x86/pc/osx/makefile
+    config/
+    config/Makefile
+    config/apps.cml
+    config/config.out
+    config/osx/
+    config/osx/osx.cml
+    config/rasta.cml
+    config/rules.cml
+    config/rules.out
+    config/sparc/
+    config/sparc/sparc.cml
+    config/x86/
+    config/x86/x86.cml
+    doc/
+    doc/doxygen/
+    doc/doxygen/Trailer.html
+    doc/doxygen/doxygenConfig.txt
+    include/
+    include/common_types.h
+    include/osapi-compiler-switches.h
+    include/osapi-debug.h
+    include/osapi-hw-core.h
+    include/osapi-os-core.h
+    include/osapi-os-filesys.h
+    include/osapi.h
+    include/osconfig.h
+    libosal/
+    libosal/README.txt
+    makefile
+    os/
+    os/linux/
+    os/linux/hal/
+    os/linux/hal/osapiarch.c
+    os/linux/makefile
+    os/linux/osapi.c
+    os/linux/osfileapi.c
+    os/linux/osfilesys.c
+    os/linux/osnetwork.c
+    os/makefile
+    os/osx/
+    os/osx/makefile
+    os/osx/osapi.c
+    os/osx/osfileapi.c
+    os/osx/osfilesys.c
+    os/osx/osnetwork.c
+    os/rtems/
+    os/rtems/makefile
+    os/rtems/osapi.c
+    os/rtems/osfileapi.c
+    os/rtems/osfilesys.c
+    prolog.mak
+    samples/
+    samples/hello/
+    samples/hello/README.txt
+    samples/hello/hello.c
+    samples/hello/makefile
+    samples/libsample/
+    samples/libsample/Makefile
+    samples/libsample/hello.c
+    samples/makefile
+    samples/testsuite/
+    samples/testsuite/TestCase.cpp
+    samples/testsuite/TestCase.h
+    samples/testsuite/TestCaseBinarySemInterface.cpp
+    samples/testsuite/TestCaseBinarySemInterface.h
+    samples/testsuite/TestCaseCountSemaphoreInterface.cpp
+    samples/testsuite/TestCaseCountSemaphoreInterface.h
+    samples/testsuite/TestCaseMutexInterface.cpp
+    samples/testsuite/TestCaseMutexInterface.h
+    samples/testsuite/TestCaseQueueInterface.cpp
+    samples/testsuite/TestCaseQueueInterface.h
+    samples/testsuite/TestCaseTaskInterface.cpp
+    samples/testsuite/TestCaseTaskInterface.h
+    samples/testsuite/TestCaseTimeInterface.cpp
+    samples/testsuite/TestCaseTimeInterface.h
+    samples/testsuite/TestConstants.h
+    samples/testsuite/TestRunner.cpp
+    samples/testsuite/TestSuite.cpp
+    samples/testsuite/TestSuite.h
+    samples/testsuite/TestUtilities.cpp
+    samples/testsuite/TestUtilities.h
+    samples/testsuite/makefile
+    tools/
+    tools/cml2/
+    tools/cml2/autoconfigure.py
+    tools/cml2/cml.py
+    tools/cml2/cmladvent.py
+    tools/cml2/cmlcompile.py
+    tools/cml2/cmlconfigure.py
+    tools/cml2/cmlsystem.py
+    tools/cml2/configtrans.py
+    tools/cml2/helpmerge.py
+    tools/cml2/kxref.py
+    tools/cml2/tree.py
+------------------------------------------------------------
+Use --include-merges or -n0 to see merged revisions.

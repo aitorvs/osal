@@ -1,0 +1,234 @@
+banner BANNER
+prefix "CONFIG_"        # Stripped at read time, prepended at save time
+
+# symbol definitions
+symbols
+
+
+
+
+# option names
+BANNER			'Operating System Abstraction Library'
+PC              'PC/x86 Arquitecture'
+RASTA           'RASTA TestBed'
+LINUX           'Linux Operating System'
+RTEMS           'RTEMS Operating System'
+SPARC           'Sparc Architecture'
+RTEMS_STACK_CHECKER_ON 'Enable RTEMS Stack Checker'
+
+# menu names
+main            'Operating System Abstraction Layer'
+osal_config     'OSAL configuration'
+osal_res_config 'Operating System Resource Configuration'
+misc_config     'Miscelaneous Configuration'
+rasta_config	'RASTA configuration'
+leon_config	    'LEON configuration'
+rtems_sparc     'RTEMS Sparc'
+
+linux_config    'Linux Operating System'
+rtems_config    'RTEMS Operating System'
+os_selection    'Operating System Selection'
+os_config       'Operating System Configuration'
+test_config     'Test Configuration'
+profile_link    'Profile Output Link'
+
+
+# option names
+MAX_NUMBER_OF_TASKS 			'Maximum Number of OS tasks'
+MAX_NUMBER_OF_MONOTONIC_TASKS	'Maximum Number of OS periodic tasks'
+MAX_NUMBER_OF_SEMAPHORES 		'Maximum Number of OS semaphores'
+MAX_NUMBER_OF_MUTEX 			'Maximum Number of OS mutex'
+MAX_NUMBER_OF_QUEUES			'Maximum Number of OS queues'
+MAX_NUMBER_OF_TIMERS			'Maximum Number of OS timers'
+MAX_NUMBER_OF_POOLS 			'Maximum Number of memory pools'
+OS_MALLOC_DEBUG_LIB             'Enable Memory Debug Library'
+EXTRA_STACK_OVERHEAD            'Extra Stack Overhead (in bytes)'
+EXTRA_MEMORY_OVERHEAD           'Extra Memory Overhead (in bytes)'
+DEBUG			                'Activate DEBUG mode'
+ASSERT      	                'Activate ASSERT(s) mode'
+OS_STATIC_RESOURCE_ALLOCATION   'Activate the static resource allocation'
+OS_ENABLE_NETWORKING            'Enable Networking'
+OSAL_INSTALL_ROOT               'OSAL Install directory'
+
+OS_MEM_POOL_ENABLE            'Enable OSAL Memory Pools'
+OS_PROFIL_ENABLE              'Enable OSAL profiling'
+OS_PROFILE_OVER_SERIAL        'Profile over Serial line'
+OS_PROFILE_OVER_ETH           'Profile over Ethernet line'
+OS_PROFILE_REMOTE_IPADDR      'Remote IP Addr to dump the profile'
+OS_PROFILE_REMOTE_PORT        'Remote Port to dump the profile'
+
+RASTA_GAISLER_GRETH_ENABLE      'Gaisler GRETH device enable'
+RASTA_GAISLER_GRSPW_ENABLE      'Gaisler GRSPW device enable'
+RASTA_GAISLER_GRCAN_ENABLE      'Gaisler GRCAN device enable'
+RASTA_GAISLER_OCCAN_ENABLE      'Gaisler OCCAN device enable'
+RASTA_GAISLER_B1553BRM_ENABLE   'Gaisler B1553BRM device enable'
+RASTA_GAISLER_B1553RT_ENABLE    'B1553RT device enable'
+RASTA_GAISLER_TMTC_ENABLE       'Gaisler TM/TC device enable'
+RASTA_GAISLER_APBUART_ENABLE    'Gaisler APBUART device enable'
+HARDWARE_CLOCK_FREQ             'Processor Clock Freq. (MHz)'
+#MM6165D_DRIVER                  'MM6165d Driver'
+LEON2                           'LEON2 architecture'
+LEON3                           'LEON3 architecture'
+
+# Test Compilation Options
+TEST_CORE_ENABLE    'Core Test(s) Enable'
+TEST_MISC_ENABLE    'Misc Test(s) Enable'
+
+# option defaults
+default TEST_CORE_ENABLE from n
+default TEST_MISC_ENABLE from n
+
+default OS_MEM_POOL_ENABLE from y
+default OS_PROFIL_ENABLE from n
+default OS_ENABLE_NETWORKING from y
+
+default EXTRA_STACK_OVERHEAD from 2480 range 2048-20480 
+default EXTRA_MEMORY_OVERHEAD from 2048 range 2048-20480 
+default MAX_NUMBER_OF_TASKS from 50 range 1-100
+default MAX_NUMBER_OF_MONOTONIC_TASKS from 50 range 1-100
+default MAX_NUMBER_OF_SEMAPHORES from 50 range 1-100
+default MAX_NUMBER_OF_MUTEX from 50 range 1-100
+default MAX_NUMBER_OF_QUEUES from 50 range 1-100
+default MAX_NUMBER_OF_TIMERS from 5 range 1-50
+default MAX_NUMBER_OF_POOLS from 5 range 1-50
+default DEBUG from y
+default ASSERT from y
+default OS_MALLOC_DEBUG_LIB from y
+default RASTA_GAISLER_GRSPW_ENABLE from y
+default RASTA_GAISLER_B1553BRM_ENABLE from y
+default RASTA_GAISLER_GRCAN_ENABLE from y
+default RASTA_GAISLER_TMTC_ENABLE from y
+default RASTA_GAISLER_GRETH_ENABLE from n
+default LEON2 from y
+
+default RTEMS_STACK_CHECKER_ON from n
+
+default HARDWARE_CLOCK_FREQ from 80 range 20-1000
+default OSAL_INSTALL_ROOT from '/opt/osal'
+
+default OS_PROFILE_REMOTE_IPADDR from '192.168.1.100'
+default OS_PROFILE_REMOTE_PORT from 12345
+
+# configuration and visualization constrains
+unless RASTA suppress dependent rasta_config
+unless LINUX suppress dependent linux_config
+unless RTEMS suppress dependent rtems_config
+unless SPARC suppress dependent rtems_sparc
+#unless OS_ENABLE_NETWORKING suppress dependent 
+RASTA_GAISLER_GRETH_ENABLE
+require LEON2 implies LEON3 == n
+unless OS_MEM_POOL_ENABLE suppress dependent
+    MAX_NUMBER_OF_POOLS
+
+unless OS_PROFIL_ENABLE suppress dependent profile_link
+unless OS_PROFILE_OVER_ETH suppress dependent
+    OS_PROFILE_REMOTE_IPADDR
+    OS_PROFILE_REMOTE_PORT
+
+unless RTEMS suppress dependent
+    profile_link
+
+derive ARCH from 
+    LEON2 ? "leon2" : 
+    (LEON3 ? "leon3" : 
+    ( PC ? "pc" : "unknown"))
+
+derive OS from
+    LINUX ? "linux" :
+    (RTEMS ? "rtems" : "unkown" )
+    
+derive PLATFORM from
+    RASTA ? "rasta" : ""
+
+# MAIN menu
+menu main
+    os_selection
+    osal_config
+	osal_res_config
+    misc_config
+    test_config
+
+# other menues
+#
+#
+
+choices profile_link
+    OS_PROFILE_OVER_SERIAL
+    OS_PROFILE_OVER_ETH
+    default OS_PROFILE_OVER_SERIAL
+
+menu test_config
+    TEST_CORE_ENABLE
+    TEST_MISC_ENABLE
+
+menu rtems_sparc
+    leon_config
+    RASTA
+    rasta_config
+
+menu misc_config
+    HARDWARE_CLOCK_FREQ %
+
+choices linux_config
+    PC
+    default PC
+
+menu rtems_config
+    SPARC
+    rtems_sparc
+    RTEMS_STACK_CHECKER_ON
+
+choices os_config
+    LINUX
+    RTEMS
+    default LINUX
+
+menu os_selection
+    os_config
+    linux_config
+    rtems_config
+
+choices leon_config
+    LEON2
+    LEON3
+    default LEON2
+
+menu rasta_config
+    RASTA_GAISLER_GRETH_ENABLE
+    RASTA_GAISLER_GRSPW_ENABLE
+    RASTA_GAISLER_GRCAN_ENABLE
+    RASTA_GAISLER_OCCAN_ENABLE
+    RASTA_GAISLER_B1553BRM_ENABLE
+    RASTA_GAISLER_B1553RT_ENABLE
+    RASTA_GAISLER_TMTC_ENABLE
+    RASTA_GAISLER_APBUART_ENABLE
+#MM6165D_DRIVER
+	
+menu osal_config
+    OS_MEM_POOL_ENABLE
+    OS_MALLOC_DEBUG_LIB
+    OS_PROFIL_ENABLE
+    profile_link
+    OS_PROFILE_REMOTE_IPADDR $
+    OS_PROFILE_REMOTE_PORT %
+    OSAL_INSTALL_ROOT$
+
+menu osal_res_config
+    DEBUG
+    ASSERT
+    OS_STATIC_RESOURCE_ALLOCATION
+    OS_ENABLE_NETWORKING
+    EXTRA_STACK_OVERHEAD %
+    EXTRA_MEMORY_OVERHEAD %
+	MAX_NUMBER_OF_TASKS %
+	MAX_NUMBER_OF_MONOTONIC_TASKS %
+	MAX_NUMBER_OF_SEMAPHORES %
+	MAX_NUMBER_OF_MUTEX %
+	MAX_NUMBER_OF_QUEUES %
+	MAX_NUMBER_OF_TIMERS %
+	MAX_NUMBER_OF_POOLS %
+
+
+start main
+
+

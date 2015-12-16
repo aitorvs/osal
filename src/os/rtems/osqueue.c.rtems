@@ -1,0 +1,561 @@
+/**
+ *  \file   osqueue.c
+ *  \brief  This file implements the Queue API of the OSAL library for the
+ *  RTEMS operating system
+ *
+ *  Detailed description starts here.
+ *
+ *  \author  Aitor Viana Sanchez (avs), Aitor.Viana.Sanchez@esa.int
+ *
+ *  \internal
+ *    Created:  19/02/09
+ *   Revision:  $Id: osqueue.c 1.4 19/02/09 avs Exp $
+ *   Compiler:  gcc/g++
+ *    Company:  European Space Agency (ESA-ESTEC)
+ *  Copyright:  Copyright (c) 2009, Aitor Viana Sanchez
+ *
+ *  This source code is released for free distribution under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation.
+ * =====================================================================================
+ */
+/*
+ * Author : Ezra Yeheskeli
+ * Purpose: 
+ *         This file  contains some of the OS APIs abstraction layer 
+ *         implementation for POSIX, specifically for Linux / Mac OS X.
+ *
+ */
+
+#include <osal/osdebug.h>
+#include <osal/osapi.h>
+#include <osal/osstats.h>
+#include <public/lock.h>
+
+#include <rtems.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+/* 
+ * ===  MACRO  ======================================================================
+ *         Name:  NEXT_RESOURCE_NAME
+ *  Description:  This MACRO gets the next resource name which will be used
+ *  during the resorce creation process.
+ * =====================================================================================
+ */
+#define NEXT_RESOURCE_NAME(c1, c2, c3, c4)  \
+                 if (c4 == '9') {       \
+                   if (c3 == '9') {     \
+                     if (c2 == 'z') {   \
+                       if (c1 == 'z') { \
+                         printf("not enough task letters for names !!!\n"); \
+                         exit( 1 );     \
+                       } else           \
+                         c1++;          \
+                       c2 = 'a';        \
+                     } else             \
+                      c2++;             \
+                     c3 = '0';          \
+                   } else               \
+                     c3++;              \
+                   c4 = '0';            \
+                 }                      \
+                 else                   \
+                   c4++                 \
+
+#define INIT_THREAD_MUTEX() \
+    do{ \
+        int ret;    \
+        ret = lock_rw_init(&_rwlock);   \
+        ASSERT( ret >= 0 ); \
+    }while(0);
+
+
+#define WLOCK()   __WLOCK()
+#define WUNLOCK() __WUNLOCK()
+
+#define CRITICAL(x) \
+    WLOCK();    \
+    {   \
+        x;  \
+    }   \
+    WUNLOCK();
+
+#define _IS_QUEUE_INIT()   \
+{   \
+    if( !_queue_is_init ) \
+    { \
+        _os_queue_init(); \
+        _queue_is_init = 1; \
+    } \
+}
+#define _CHECK_QUEUE_INIT()  (_IS_QUEUE_INIT())
+
+/** This variable flags whether the queue class has been yet initialized or not
+ */
+static uint8_t _queue_is_init = 0;
+
+/********************************* FILE CLASSES/STRUCTURES */
+
+/* queues */
+typedef struct
+{
+    int free;
+    rtems_id id;
+    int mul_Creator;
+    int32_t is_blocking;
+}OS_queue_record_t;
+
+
+/********************************* FILE PRIVATE VARIABLES  */
+
+/** this is the Initial name for the queues  */
+LOCAL char nqueue_name[] = "0000";
+LOCAL OS_queue_record_t     OS_queue_table      [OS_MAX_QUEUES];
+
+/********************************* PRIVATE INTERFACE    */
+
+static void _os_queue_init(void)
+{
+    int i;
+
+    STATS_INIT_QUEUE();
+
+    /* Initialize Message Queue Table */
+
+    for(i = 0; i < OS_MAX_QUEUES; i++)
+    {
+        OS_queue_table[i].free        = TRUE;
+        OS_queue_table[i].id          = UNINITIALIZED;
+        OS_queue_table[i].mul_Creator     = UNINITIALIZED;
+        OS_queue_table[i].is_blocking = UNINITIALIZED;
+    }
+
+    INIT_THREAD_MUTEX();
+}
+
+
+/********************************* PUBLIC  INTERFACE    */
+
+/****************************************************************************************
+  MESSAGE QUEUE API
+ ****************************************************************************************/
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_QueueCreate
+ *  Description:  This function creates a message queue.
+ *  Parameters:
+ *      - queue_id:     This is the queue identifier to be returned
+ *      - queue_name:   This parameter must be NULL.
+ *      - queue_depth:  This is the depth of the queue
+ *      - data_size:    This is the size of the data to be stored in the queue
+ *      - flags:        Not used so far.
+ *  Return:
+ *      OS_STATUS_SUCCESS when the call success
+ *      OS_STATUS_QUEUE_INVALID_SIZE when the 'data_size' and 'queue_depth' are not
+ *      valid
+ *      OS_STATUS_EINVAL when there is not valid pointers passed as parameters
+ *      OS_STATUS_NAME_TOO_LONG when the queue name is too long
+ *      OS_STATUS_NO_FREE_IDS when there are no more identifiers for the queues
+ *      OS_STATUS_NAME_TAKEN when the 'queue_name' is already in use
+ *      OS_STATUS_ERROR when any other error occurs
+ *
+ * =====================================================================================
+ */
+Result_T OS_QueueCreate (
+        uint32_t *queue_id, 
+        uint32_t queue_depth, 
+        uint32_t data_size, 
+        uint32_t flags)
+{
+    ASSERT(queue_id);
+
+    _CHECK_QUEUE_INIT();
+
+    rtems_status_code  status;
+    rtems_name         r_name;
+    uint32_t possible_qid;
+
+    if ( queue_id == NULL )
+        return OS_STATUS_EINVAL;
+
+    if(queue_depth == 0 || data_size == 0)
+        return OS_STATUS_QUEUE_INVALID_SIZE;
+
+    /* we don't want to allow names too long*/
+    /* if truncated, two names might be the same */
+
+
+    /* Check Parameters */
+    WLOCK();
+    {
+        for(possible_qid = 0; possible_qid < OS_MAX_QUEUES; possible_qid++)
+        {
+            if (OS_queue_table[possible_qid].free == TRUE)
+                break;
+        }
+
+        if( possible_qid >= OS_MAX_QUEUES || OS_queue_table[possible_qid].free != TRUE)
+        {
+            WUNLOCK();
+
+            return OS_STATUS_NO_FREE_IDS;
+        }
+
+        /* set the ID free to false to prevent other tasks from grabbing it */
+        OS_queue_table[possible_qid].free = FALSE;   
+    }
+    WUNLOCK();
+
+    /*
+     ** Create the message queue.
+     ** The queue attributes are set to default values; the waiting order
+     ** (RTEMS_FIFO or RTEMS_PRIORITY) is irrelevant since only one task waits
+     ** on each queue.
+     ** The RTEMS object name is not used by SB; it was set this way on ST5.
+     */
+    NEXT_RESOURCE_NAME(nqueue_name[0],nqueue_name[1],nqueue_name[2],nqueue_name[3]);
+    r_name = rtems_build_name(nqueue_name[0],nqueue_name[1],nqueue_name[2],nqueue_name[3]);
+    status = rtems_message_queue_create(
+            r_name,                        /* 32-bit RTEMS object name; not used */
+            queue_depth,                   /* maximum number of messages in queue (queue depth) */
+            data_size,                     /* maximum size in bytes of a message */
+            RTEMS_FIFO|RTEMS_LOCAL,        /* attributes (default) */
+            &(OS_queue_table[possible_qid].id)  /* object ID returned for queue */
+            );
+
+    /*
+     ** If the operation failed, report the error */
+    if (status != RTEMS_SUCCESSFUL) 
+    {    
+        WLOCK();
+        {
+            OS_queue_table[possible_qid].free = TRUE;   
+        }
+        WUNLOCK();
+        return OS_STATUS_ERROR;
+    }
+
+    /* Set the queue_id to the id that was found available*/
+    /* Set the name of the queue, and the mul_Creator as well */
+
+    *queue_id = possible_qid;
+
+    WLOCK();
+    {
+        OS_queue_table[*queue_id].free = FALSE;
+        OS_queue_table[*queue_id].mul_Creator = OS_TaskGetId();
+        OS_queue_table[*queue_id].is_blocking = (flags == OS_NONBLOCKING) ? flags : OS_BLOCKING;
+
+        /*  Stats   */
+        STATS_CREAT_QUEUE();
+    }
+    WUNLOCK();
+
+    return OS_STATUS_SUCCESS;
+
+} /* end OS_QueueCreate */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_QueueDelete
+ *  Description:  This function deletes the queue object referenced by
+ *  'queue_id'.
+ *  Parameters:
+ *      - queue_id: queue identifier
+ *  Returns:
+ *      OS_STATUS_SUCCESS when the call success
+ *      OS_STATUS_EINVAL when the 'queue_id' is not valid
+ *      OS_STATUS_ERROR when any other error occurs
+ *
+ * NOTE: This function is only allow in the non-LOCAL resource allocation mode,
+ * which can be seleceted during OSAL configuraiton.
+ * =====================================================================================
+ */
+Result_T OS_QueueDelete (uint32_t queue_id)
+{
+    _CHECK_QUEUE_INIT();
+
+#if defined (CONFIG_OS_STATIC_RESOURCE_ALLOCATION)
+    return OS_NOT_SUPPORTED;
+#else
+    /* Check to see if the queue_id given is valid */
+
+    if (queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    /* Try to delete the queue */
+    if (rtems_message_queue_delete(OS_queue_table[queue_id].id) != RTEMS_SUCCESSFUL)
+    {
+        return OS_STATUS_ERROR;
+    }
+
+    /* 
+     * Now that the queue is deleted, remove its "presence"
+     * in OS_queue_table
+     */
+    WLOCK();
+    {
+        OS_queue_table[queue_id].free = TRUE;
+        OS_queue_table[queue_id].mul_Creator = UNINITIALIZED;
+        OS_queue_table[queue_id].id = UNINITIALIZED;
+
+        /*  Stats   */
+        STATS_DEL_QUEUE();
+    }
+    WUNLOCK();
+
+    return OS_STATUS_SUCCESS;
+#endif
+
+} /* end OS_QueueDelete */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_QueueGet
+ *  Description:  This function retrieves data items from the referenced queue.
+ *  Parameters:
+ *      - queue_id:     queue identifier
+ *      - data:         data retrieved
+ *      - size:         maximum size of the data element being gathered
+ *      - size_copied:  actual size of the data retrieved
+ *      - timeout:      time out
+ *  Returns:
+ *      OS_STATUS_SUCCESS when the call success
+ *      OS_STATUS_EINVAL when the queue identifier is not valid
+ *      OS_STATUS_EINVAL when any of the pointer parameters are not valid
+ *      OS_STATUS_QUEUE_EMPTY when the queue is empty
+ *      OS_STATUS_QUEUE_TIMEOUT when the timeout expires
+ *      OS_STATUS_QUEUE_INVALID_SIZE when the size copied from the queue was not
+ *      correct
+ * =====================================================================================
+ */
+Result_T OS_QueueGet (
+        uint32_t queue_id, 
+        void *data, 
+        uint32_t size, 
+        size_t *size_copied, 
+        int32_t timeout)
+{
+    /* msecs rounded to the closest system tick count */
+    rtems_status_code  status;
+    rtems_interval     ticks;  
+    rtems_id           rtems_queue_id;
+
+    _CHECK_QUEUE_INIT();
+
+    /* Check Parameters */
+
+    if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+    else
+    {
+        if( (data == NULL) || (size_copied == NULL) )
+            return OS_STATUS_EINVAL;
+    }
+
+    rtems_queue_id = OS_queue_table[queue_id].id; 
+
+    if( timeout > 0 )
+    {
+        /*
+         * Wait for up to a specified amount of time for a message to arrive.
+         * If no message arrives within the timeout interval, return with a
+         * failure indication.
+         */
+        ticks = timeout * OS_TICKS_PER_SECOND / 1000;
+        status = rtems_message_queue_receive(
+                rtems_queue_id,                     /* message queue descriptor */
+                data,                               /* pointer to message buffer */
+                size_copied,                        /* returned size of message */
+                RTEMS_WAIT,                         /* wait option */
+                ticks                               /* timeout */
+                );
+
+        if (status == RTEMS_TIMEOUT)
+            return OS_STATUS_QUEUE_TIMEOUT;       
+    }
+    else
+    {
+        if( OS_queue_table[queue_id].is_blocking == OS_BLOCKING )
+        {
+            /*
+             * Pend forever until a message arrives.
+             */
+
+            /*  Get a message without waiting.  If no message is present,
+             *  return with a failure indication. 
+             */
+            status = rtems_message_queue_receive(
+                    rtems_queue_id,            /* message queue descriptor */
+                    data,                                    /* pointer to message buffer */
+                    size_copied,                             /* returned size of message */
+                    RTEMS_WAIT,                           /* wait option */
+                    RTEMS_NO_TIMEOUT                         /* timeout */
+                    );
+        }
+        else if( OS_queue_table[queue_id].is_blocking == OS_NONBLOCKING )
+        {
+            /*  Get a message without waiting.  If no message is present,
+             *  return with a failure indication.
+             */
+            status = rtems_message_queue_receive(
+                    rtems_queue_id,            /* message queue descriptor */
+                    data,                                    /* pointer to message buffer */
+                    size_copied,                             /* returned size of message */
+                    RTEMS_NO_WAIT,                           /* wait option */
+                    RTEMS_NO_TIMEOUT                         /* timeout */
+                    );
+
+            if (status == RTEMS_UNSATISFIED)
+                return OS_STATUS_QUEUE_EMPTY;
+        }
+        else return OS_STATUS_ERROR;
+    }
+
+    /*
+     * Check the status of the read operation.  If a valid message was
+     * obtained, indicate success.  If an error occurred, send an event
+     * to indicate an unexpected queue read error.
+     */
+    if (status == RTEMS_SUCCESSFUL )
+    {
+
+//        if ( *size_copied == size)
+        return OS_STATUS_SUCCESS;
+    }
+    else
+        return OS_STATUS_ERROR;
+
+
+}/* end OS_QueueGet */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_QueuePut
+ *  Description:  This function stores a data in the queue referenced by
+ *  'queue_id'.
+ *  Parameters:
+ *      - queue_id: queue identifier
+ *      - data:     pointer to the data to be put
+ *      - size:     data size
+ *      - flags:    not used.
+ *  Returns:
+ *      OS_STATUS_SUCCESS when the call success
+ *      OS_STATUS_EINVAL when the 'data' pointer is not valid
+ *      OS_STATUS_EINVAL when the 'queue_id' is not valid
+ *      OS_STATUS_QUEUE_INVALID_SIZE when the data size is not valid
+ *      OS_STATUS_QUEUE_FULL when the queue is already full of data
+ *      OS_STATUS_ERROR when any other error occurrs.
+ * =====================================================================================
+ */
+Result_T OS_QueuePut (uint32_t queue_id, void *data, uint32_t size, uint32_t flags)
+{
+    UNUSED(flags);
+    rtems_status_code  rtems_status;
+    rtems_id           rtems_queue_id;
+
+    _CHECK_QUEUE_INIT();
+
+    /* Check Parameters */
+
+    if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    if (data == NULL)
+        return OS_STATUS_EINVAL;
+    if(size == 0)
+        return OS_STATUS_QUEUE_INVALID_SIZE;
+
+    rtems_queue_id = OS_queue_table[queue_id].id; 
+
+    /* Get Message From RTEMS Message Queue */
+
+    /** Write the buffer pointer to the queue.  If an error occurred, report it
+     ** with the corresponding SB status code.
+     */
+    switch(flags)
+    {
+        case OS_QUEUE_MSG_URGENT:
+        {
+            rtems_status = rtems_message_queue_urgent(
+                    rtems_queue_id,     /* message queue descriptor */
+                    data,                             /* pointer to message */
+                    size                              /* length of message */
+                    );
+            break;
+        }
+        default:
+        {
+            rtems_status = rtems_message_queue_send(
+                    rtems_queue_id,     /* message queue descriptor */
+                    data,                             /* pointer to message */
+                    size                              /* length of message */
+                    );
+
+            break;
+        }
+
+    }
+
+    if (rtems_status == RTEMS_SUCCESSFUL) 
+    {
+        return OS_STATUS_SUCCESS;
+    }
+    else if (rtems_status == RTEMS_TOO_MANY) 
+    {
+        /* 
+         ** Queue is full. 
+         */
+        return OS_STATUS_QUEUE_FULL;
+    }
+    else 
+    {
+        /* 
+         ** Unexpected error while writing to queue. 
+         */
+        return OS_STATUS_ERROR;
+    }
+
+}/* end OS_QueuePut */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_QueueGetInfo
+ *  Description:  This function retrieves the information related to the queue
+ *  referenced by 'queue_id'
+ *  Parameters:
+ *      - queue_id:     queue identifier
+ *      - queue_prop:   structure where the queue info will be stored
+ *  Returns:
+ *      OS_STATUS_SUCCESS when the call success.
+ *      OS_STATUS_EINVAL if the queue_prop pointer is not valid
+ *      OS_STATUS_EINVAL if the 'queue_id' is not valid
+ * =====================================================================================
+ */
+Result_T OS_QueueGetInfo (uint32_t queue_id, OS_queue_prop_t *queue_prop)  
+{
+    _CHECK_QUEUE_INIT();
+
+    /* Check to see that the id given is valid */
+
+    if (queue_prop == NULL)
+        return OS_STATUS_EINVAL;
+
+    if (queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    /* put the info into the stucture */
+    WLOCK();
+    {
+        queue_prop -> mul_Creator =   OS_queue_table[queue_id].mul_Creator;
+    }
+    WUNLOCK();
+
+
+    return OS_STATUS_SUCCESS;
+
+} /* end OS_QueueGetInfo */
+
+
+

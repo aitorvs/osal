@@ -1,0 +1,829 @@
+/**
+ *  \file   osmemmgr.c
+ *  \brief  This file implements a memory manager allocator based on the
+ *  original buddy system memory allocation algorithm.
+ *
+ *  The original buddy system memory allocation algorithm was taken from
+ *  "The Art of Computer Programming, Volume 1, 3rd Edition", by
+ *  Donald E. Knuth, pages 442-444.
+ *
+ *  Detailed description starts here.
+ *
+ *  \author  Aitor Viana Sanchez (avs), Aitor.Viana.Sanchez@esa.int
+ *
+ *  \internal
+ *    Created:  10/01/2009
+ *   Revision:  $Id: osmemmgr.c 1.4 10/01/2009 avs Exp $
+ *   Compiler:  gcc/g++
+ *    Company:  European Space Agency (ESA-ESTEC)
+ *  Copyright:  Copyright (c) 2009, Aitor Viana Sanchez
+ *
+ *  This source code is released for free distribution under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation.
+ * =====================================================================================
+ */
+
+#include <osal/osapi.h>
+#include <osal/osdebug.h>
+#include <public/lock.h>
+
+#ifdef CONFIG_OS_MEMMGR_ENABLE
+
+/*
+ * Buddy system memory allocator.
+ *
+ * The original buddy system memory allocation algorithm was taken from
+ * "The Art of Computer Programming, Volume 1, 3rd Edition", by
+ * Donald E. Knuth, pages 442-444.
+ *
+ */
+
+
+#define INIT_THREAD_MUTEX() \
+    do{ \
+        int ret;    \
+        ret = lock_rw_init(&_rwlock);   \
+        ASSERT( ret >= 0 ); \
+    }while(0);
+
+
+#define THREAD_LOCK()   __WLOCK()
+#define THREAD_UNLOCK() __WUNLOCK()
+
+
+/* 
+ * The maximal chunk size is 2**MAX_CHUNK_SIZE 
+ * and the minimal 2**MIN_CHUNK_SIZE 
+ */
+
+#define MIN_CHUNK_LOG2_SIZE (CONFIG_MAX_MEMORY_MANAGER_POOL_CHUNK_LOG2_SIZE)
+#define MAX_CHUNK_LOG2_SIZE (CONFIG_MAX_MEMORY_MANAGER_POOL_LOG2_SIZE)
+
+static int MAX_CHUNK_SIZE;
+static int MIN_CHUNK_SIZE;
+
+/*  If RASTA is configured to be the target the dynamic memory pool is located
+ *  in a specific section defined by CONFIG_SDRAMDATA linked in SDRAM memory.
+ *  The user has to modify the linkcmds.leon[2/3] scripts to locate this
+ *  section in the proper location.
+ */
+#ifdef CONFIG_OS_MEMMGR_MANUAL_LINK
+static uint8_t pool[1]
+    __attribute__((__aligned__(8)))     //  Aligned 8-byte boundary
+    __attribute__((section(CONFIG_MEMMGR_SECTION)));
+#else
+static uint8_t pool[(1 << MAX_CHUNK_LOG2_SIZE)]
+    __attribute__((__aligned__(8)));    // 8-byte boundary allignement
+#endif
+
+/* byte_t and half_t definitions do the work more easy */
+
+typedef uint8_t byte_t;
+typedef uint16_t half_t;
+typedef uint32_t word_t;
+typedef uint32_t dword_t;
+
+#define BLOCK_FREE 0 // USED = !FREE
+
+/*
+ * All the chunks have this format:
+ * 
+ *   This part is the tag_overhead
+ * ------------------------------------
+ * ----------------------------------------------------------------------------
+ * | magic num | state_block | log2size | div_code | prev | next | FREE SPACE |
+ * ----------------------------------------------------------------------------
+ *    2 bytes      2 bytes     2 bytes     2 byte    2 byte 2 bytes  ((2 ** 
+ *                                                                   log2size 
+ *                                                                   bytes)
+ *                                                              - tag_overhead)
+ *
+ *                                                  --------------------------
+ *                                                 This part will be allocated 
+ *                                    
+ *
+ *
+ *
+ *
+ *  The free list of chunks is a double linked list with the next format:
+ *
+ *     -------------          ----------------------------------------
+ *     | MAX_C_L_S | -------> | NULL | x | y | NULL | | | FREE SPACE |   |->
+ *     |-----------|          ----------------------- |---------------   |
+ *                                                    --------------------
+ *       .........
+ *       
+ *     |-----------|
+ *     | MIN_C_L_S |  -----> NULL
+ *     -------------
+ *
+ */
+
+
+//-----------------------------------------------------------------------------
+
+#define TAG_OVERHEAD (sizeof (half_t) + sizeof(half_t) + sizeof (half_t) + sizeof (half_t))
+
+#define MAGIC_NUMBER 0xA55A
+
+//-----------------------------------------------------------------------------
+
+struct chunk_header {
+    /* magic number is an ID */
+    half_t magic_number;
+    /* state block indicates if chunk is being used, when the chunk is
+       used, state_block have the size which has been used */
+    half_t state_block;
+    /* Max size is the size of chunk in log2 (size) */
+    half_t log2size;
+    /* This field allow us to know if chunk is the odd or the even chunk */
+    half_t div_code;
+    /* These pointers are used to aim free chunks with the same size */
+    struct chunk_header *prev;
+    struct chunk_header *next;
+};
+
+typedef struct chunk_header chunk_header_t;
+
+/* This is our first chunk */
+static chunk_header_t *first_chunk;
+
+/* This array contains all the free chunks */
+static chunk_header_t **free_chunks_array;
+
+static int all_ok = 0;
+
+/******************************************************************************
+ * STATIC ROUTINES DECLARATION
+ *****************************************************************************/
+
+/**
+ *  These functions return log2 max and log2 min chunk size
+ */
+static int max_chunk_log2_size(void);
+
+/**
+ * \todo Documentar este m?todo
+ */
+static int min_chunk_log2_size(void);
+
+/**
+ *  These functions return max and min chunk size
+ */
+static int max_chunk_size(void); 
+
+/**
+ * \todo Documentar este m?todo
+ */
+static int min_chunk_size(void);
+
+/**
+ * \todo Documentar este m?todo
+ */
+static int log2size(size_t len);
+
+/**
+ * \todo Documentar este m?todo
+ */
+static int split (chunk_header_t *chunk);
+
+/**
+ * \todo Documentar este m?todo
+ */
+static chunk_header_t *merge (chunk_header_t *chunk);
+
+/**
+ * \todo Documentar este m?todo
+ */
+static void print_chunk(chunk_header_t *chunk);
+
+//-----------------------------------------------------------------------------
+
+/** 
+ * This function initialite all buffers needed  
+ * by the buddy algorithm 
+ * 
+ * @param max_chunk_log2_size:  This parameter is the total amount of the pool
+ * memory (log2 of the amount of memory)
+ * 
+ * @param min_chunk_log2_size:  This parameter is the minimum size that could
+ * be allocated
+ * 
+ * @param initial_buffer:   This parameter is the pointer to the memory over
+ * that the dynamic memory allocations will be performed
+ * 
+ * @return The routine returns 0 on success and -1 in any other case
+ */
+static int memmgr_init(
+        int max_chunk_log2_size,
+        int min_chunk_log2_size,
+        uint8_t *buffer)
+{
+
+    chunk_header_t *chunk;
+    void *addr;
+    int i;
+
+    MAX_CHUNK_SIZE = (1 << MAX_CHUNK_LOG2_SIZE);
+    MIN_CHUNK_SIZE = (1 << MIN_CHUNK_LOG2_SIZE);
+
+    TRACE(MAX_CHUNK_SIZE, "d");
+    TRACE(MIN_CHUNK_SIZE, "d");
+    TRACE((int)pool, "x");
+
+    if (min_chunk_log2_size < 4 || max_chunk_log2_size < min_chunk_log2_size){
+        DEBUG ("ERROR: Memory pool can't be initialited");
+        return -1;
+    }
+
+    INIT_THREAD_MUTEX();
+
+    THREAD_LOCK();
+
+    free_chunks_array = (chunk_header_t **) buffer;
+
+    addr = (void *)((unsigned long) buffer + 
+            (unsigned long)(MAX_CHUNK_LOG2_SIZE + 1) * 
+            (unsigned long) sizeof (chunk_header_t *));
+
+    first_chunk = (chunk_header_t *) addr;
+    chunk = (chunk_header_t *) addr;
+
+    chunk -> magic_number = MAGIC_NUMBER;
+    chunk -> state_block = BLOCK_FREE;
+    chunk -> log2size = log2size(MAX_CHUNK_SIZE -((MAX_CHUNK_LOG2_SIZE + 1) * 
+                sizeof(chunk_header_t *)));
+    chunk -> div_code = 0;
+    chunk -> next = NULL;
+    chunk -> prev = NULL;
+
+    for (i = 0; i < MAX_CHUNK_LOG2_SIZE; i++)
+        free_chunks_array [i] = NULL;
+
+    free_chunks_array [chunk -> log2size] = chunk;
+
+    all_ok = 1;
+
+    THREAD_UNLOCK();
+    return 0;
+}
+
+/******************************************************************************
+ * PUBLIC INTERFACE
+ *****************************************************************************/
+
+/* see man malloc */
+void *OS_Malloc (size_t size)
+{
+    static uint32_t is_first_malloc = TRUE;
+    int i_log2size, i;
+    chunk_header_t *chunk;  
+    byte_t *aux;
+
+    if( is_first_malloc )
+    {
+        memmgr_init(MAX_CHUNK_LOG2_SIZE, MIN_CHUNK_LOG2_SIZE, (uint8_t*)pool);
+        is_first_malloc = FALSE;
+    }
+
+    if (size == 0 || !all_ok)
+        return NULL;
+
+    i_log2size = log2size (size + TAG_OVERHEAD);
+    /* 8 bytes are the overhead for buddy structures */
+
+    if (i_log2size == -1) return NULL;
+
+    THREAD_LOCK();
+
+    /* find the smallest i_log2size that has a free chunk */
+    for (i = i_log2size; i <= MAX_CHUNK_LOG2_SIZE; i++)
+        if ((chunk = free_chunks_array [i]) != NULL) break;
+
+    if (i > MAX_CHUNK_LOG2_SIZE) {
+        PRINT_MSG_1 ("ERROR: There isn't any chunk of %d bytes\n", (int)size);
+        goto err_unlock;
+    }
+
+    /* split larger i_log2size until we reach the desired size */
+    while (i > i_log2size) {
+        /* a free i_log2size indicates that the previous split failed */
+        if ((chunk = free_chunks_array [i]) == NULL) {
+            DEBUG ("ERROR: Memory pool exhausted");
+            goto err_unlock;
+        }
+        split(chunk);
+        i--;
+    }
+
+    if ((chunk = free_chunks_array[i_log2size]) == NULL){
+        goto err_unlock;
+    }
+
+
+    if (chunk -> magic_number != MAGIC_NUMBER 
+            || chunk -> state_block != BLOCK_FREE){
+        DEBUG ("ERROR: rt_malloc function has an error !!!");
+        goto err_unlock;
+    }
+
+    free_chunks_array[i_log2size] = chunk -> next;
+
+    if (chunk -> next != NULL) 
+        chunk -> next -> prev = NULL;
+
+    /* 
+     * we store in state_block the difference between 
+     * size given and size demanded
+     */
+
+    chunk -> state_block = (1 << chunk -> log2size) - (size + TAG_OVERHEAD); 
+
+    if (chunk -> state_block == 0) chunk -> state_block = 0xFFFF;
+
+    aux = (byte_t *) chunk;
+
+    PRINT_MSG_1("MM_DEBUG: Malloc returns 0x%x\n", (unsigned)(aux + TAG_OVERHEAD));
+
+    THREAD_UNLOCK();
+    return (void *)(aux + TAG_OVERHEAD);
+
+err_unlock:
+    THREAD_UNLOCK();
+    return NULL;
+}
+
+/* 
+ *  see man free
+ *
+ *  rt_free() is only guaranteed to work if ptr is the address of a block
+ *  allocated by rt_malloc() (and not yet freed).
+ */
+
+void OS_Free (void *ptr)
+{
+    byte_t *aux;
+    chunk_header_t *chunk, *new_chunk;  
+
+    if (!all_ok || ptr == NULL)
+        return;
+
+    THREAD_LOCK();
+
+    aux = (byte_t *) ptr;
+    aux = aux - TAG_OVERHEAD;
+
+    chunk = (chunk_header_t *) aux;
+
+    if(chunk -> magic_number != MAGIC_NUMBER) {
+        DEBUG ("CRITICAL ERROR (OS_Free): chunk corrupted");
+        goto exit;
+    }
+
+    chunk -> state_block = BLOCK_FREE;
+
+    while ((new_chunk = merge(chunk)) != NULL) 
+        if (new_chunk != NULL) chunk = new_chunk;
+
+    /* new chunk is inserted in chunk */
+    if (free_chunks_array [chunk -> log2size] != NULL)
+        free_chunks_array [chunk -> log2size] -> prev = chunk;
+
+    chunk -> next = free_chunks_array [chunk -> log2size];         
+    free_chunks_array [chunk -> log2size] = chunk;
+
+    PRINT_MSG_1("MM_DEBUG: FREE - 0x%x has been freed\n",(uint32_t)ptr);
+
+exit:
+    THREAD_UNLOCK();
+}
+
+/******************************************************************************
+ * STATIC ROUTINES
+ *****************************************************************************/
+static int log2size(size_t len)
+{
+    int i;
+
+    if (len <= 0) {
+        DEBUG ("ERROR: Chunk length must be > 0");
+        return -1;
+    }
+
+    if (len <= MIN_CHUNK_SIZE)
+        return MIN_CHUNK_LOG2_SIZE;
+
+    for (i = MIN_CHUNK_LOG2_SIZE; 
+            (i <= MAX_CHUNK_LOG2_SIZE) && (len > (1 << i)) ; i++)
+        ;
+
+    if (i > MAX_CHUNK_LOG2_SIZE) {
+        DEBUG ("ERROR: Maximum chunk size exceeded");
+        return -1;
+    }
+
+    return i;
+}
+
+/*
+ * Split a free memory chunk into two halves
+ */
+
+static int split (chunk_header_t *chunk){
+    chunk_header_t *half;
+    byte_t *aux;
+
+    if( chunk -> magic_number != MAGIC_NUMBER) {
+        DEBUG ("CRITICAL ERROR: chunk corrupted");
+        return -1;
+    }
+
+    if (chunk -> state_block != BLOCK_FREE) {
+        DEBUG ("ERROR: Used chunk can't be splitted");
+        return -1;
+    }
+
+    if (chunk -> log2size == MIN_CHUNK_LOG2_SIZE){
+        DEBUG ("ERROR: This chunk has minim size and it can't be splitted");
+        return -1;
+    }
+
+    if (chunk -> prev != NULL)
+        chunk -> prev -> next = chunk -> next;
+
+    if (chunk -> next != NULL)
+        chunk -> next -> prev = chunk -> prev;
+
+    if (free_chunks_array [chunk -> log2size] == chunk)
+        free_chunks_array [chunk -> log2size] = chunk -> next;
+
+
+    chunk -> log2size --;
+    chunk -> div_code ++;
+
+    aux = (byte_t *) chunk;
+    aux += (1 << chunk -> log2size);
+
+    half = (chunk_header_t *) aux;   
+
+    half -> magic_number = MAGIC_NUMBER;
+    half -> state_block = BLOCK_FREE;
+    half -> log2size = chunk -> log2size;
+    half -> div_code = 0;
+
+    chunk -> next = half;
+    half -> prev = chunk;
+
+    chunk -> prev = NULL; 
+    half -> next =  free_chunks_array [chunk -> log2size]; 
+
+    free_chunks_array [chunk -> log2size] = chunk;
+
+    return 0;
+}
+
+
+/*
+ * Merge a free memory chunk with its buddy
+ */
+
+static chunk_header_t *merge (chunk_header_t *chunk){
+    chunk_header_t *half, *new_chunk;
+    byte_t *aux;
+
+    if( chunk -> magic_number != MAGIC_NUMBER) {
+        DEBUG ("CRITICAL ERROR: chunk corrupted");
+        return NULL;
+    }
+
+    /* merge an used chunk ?????, this has to be an error */
+    if (chunk -> state_block != BLOCK_FREE) {
+        DEBUG ("ERROR: Used chunk can't be merged");
+        return NULL;
+    }
+
+    /* it can be only if we have reserved several chunks of the same size */
+    if (chunk -> log2size == MAX_CHUNK_LOG2_SIZE)
+        return NULL;
+
+    chunk -> prev = NULL;
+    chunk -> next = NULL;
+
+    aux = (byte_t *) chunk;
+
+    /* we will search the buddy of the chunk */
+    if (chunk -> div_code == 0) { // even
+        aux -= (1 << chunk -> log2size);
+        half = (chunk_header_t *) aux;
+        new_chunk = half;
+    } else { // odd
+        aux += (1 << chunk -> log2size);
+        half = (chunk_header_t *) aux;
+        new_chunk = chunk;
+    }
+
+    if( half -> magic_number != MAGIC_NUMBER) {
+        DEBUG ("CRITICAL ERROR: chunk corrupted");
+        return NULL;
+    }
+
+    /* can we merge the chunks?, it could be */
+    if (half -> state_block == BLOCK_FREE && 
+            half -> log2size == chunk -> log2size) {
+        // The chunks will be merged
+
+        if (free_chunks_array [half -> log2size] == half) 
+            free_chunks_array [half -> log2size] = half -> next;
+
+        if (half -> prev != NULL)
+            half -> prev -> next = half -> next;
+
+        if (half -> next != NULL)
+            half -> next -> prev = half -> prev;
+
+        new_chunk -> state_block = BLOCK_FREE;
+        new_chunk -> log2size ++;
+
+        new_chunk -> div_code --;
+        new_chunk -> prev = NULL;
+        new_chunk -> next = NULL;
+
+        return new_chunk;
+    }  
+    /* Merge operation hasn't been able done */
+    return NULL;
+}
+
+static int max_chunk_log2_size(void){
+    return MAX_CHUNK_LOG2_SIZE;
+}
+
+static int min_chunk_log2_size(void){
+    return MIN_CHUNK_LOG2_SIZE;
+}
+
+static int max_chunk_size(void){
+    return MAX_CHUNK_SIZE;
+} 
+
+static int min_chunk_size(void){
+    return MIN_CHUNK_SIZE;
+}
+
+
+/******************************************************************************
+ * DEBUGGING ROUTINES
+ *****************************************************************************/
+
+#ifdef CONFIG_OS_MEMMGR_DEBUG
+
+/* 
+ * This function gives information about 
+ * algorithm structures
+ */
+
+void OS_MemStatus (void)
+{
+    int n = 0;
+    byte_t *aux;
+    chunk_header_t *chunk;
+
+    if (!all_ok) return;
+
+    aux = (byte_t *) first_chunk;
+
+    while (n < MAX_CHUNK_SIZE){
+
+        chunk =  (chunk_header_t *) aux;
+
+        n += (1 << (chunk -> log2size));
+        print_chunk(chunk);
+
+        aux += (1 << chunk -> log2size);
+    }
+}
+
+/* memory_dump does a dumped of the memory context */
+
+void memory_dump (void){
+    int i;
+    byte_t *tmp;
+
+    if (!all_ok) return;
+
+    tmp = (byte_t *) first_chunk;
+
+    PRINT_DBG_C ("\nMemory region dumped: 0x");
+    PRINT_DBG_H ((unsigned int)first_chunk);
+    PRINT_DBG_C (" - 0x");
+    PRINT_DBG_H (tmp + MAX_CHUNK_SIZE);
+    PRINT_DBG_C ("\n\n");
+
+    for (i = 0; i < MAX_CHUNK_SIZE; i = i + sizeof(byte_t)){
+        PRINT_DBG_H (tmp[i]);
+        PRINT_DBG_C (" ");
+    }  
+    PRINT_DBG_C ("\n");
+}
+
+/* 
+ * free_blocks_context does a dump
+ * of free_chunks_array and its context 
+ */
+
+void free_blocks_context(void){
+    int i;
+    chunk_header_t *chunk;
+
+    if (!all_ok) return;
+
+    for (i = MAX_CHUNK_LOG2_SIZE; i >= MIN_CHUNK_LOG2_SIZE; i--){
+        PRINT_DBG_C ("[");
+        PRINT_DBG_D(i);
+        PRINT_DBG_C ("] -> ");
+
+        if (free_chunks_array[i]!=NULL){
+            chunk = free_chunks_array [i];
+            while (chunk != NULL) {
+                PRINT_DBG_C ("MNum: 0x");
+                PRINT_DBG_H (chunk -> magic_number);
+                PRINT_DBG_C (", Address: 0x");
+                PRINT_DBG_H (chunk);
+                PRINT_DBG_C (", State: ");
+                PRINT_DBG_D (chunk -> state_block);
+                PRINT_DBG_C (", Log2size: ");
+                PRINT_DBG_D (chunk -> log2size);
+                PRINT_DBG_C (", Div_code: ");
+                PRINT_DBG_D (chunk -> div_code);
+                PRINT_DBG_C ("\n\tPrev: 0x");
+                PRINT_DBG_H (chunk -> prev);
+                PRINT_DBG_C (", Next: 0x");
+                PRINT_DBG_H (chunk -> next);
+                PRINT_DBG_C ("\n");
+                chunk = chunk -> next;
+            }
+        } else DEBUG ("NULL");
+    }
+}
+
+void global_state (int *free, int *used, int *overhead){
+    chunk_header_t *b;
+    byte_t *aux;
+    int n = 0;
+    *free = 0;
+    *used = 0;
+    *overhead = 0;
+    if (!all_ok) return;
+    aux = (byte_t *)first_chunk;
+    while (n < MAX_CHUNK_SIZE){
+        b = (chunk_header_t *) aux;
+        n += (1<< b -> log2size); 
+        if (b -> state_block != 0) {
+            *used += (1 << b -> log2size);
+        } else {
+            *free += (1 << b -> log2size);
+        }
+        aux += (1 << b -> log2size);
+        *overhead += TAG_OVERHEAD;
+    }
+
+}
+
+/* 
+ * This function checks memory searching 
+ * errors and incoherences 
+ * return :
+ * 0 if there aren't errors 
+ * or 
+ * -1 in other case
+ */
+
+Result_T OS_MemCheck (void)
+{
+    int n = 0, frag;
+    byte_t *aux;
+    chunk_header_t *chunk, *chunk_r;
+
+    if (!all_ok) return OS_ERROR;
+
+    aux = (byte_t *) first_chunk;
+
+    if(first_chunk -> magic_number != MAGIC_NUMBER) {
+        return OS_ERROR;
+    }
+
+    while (n < MAX_CHUNK_SIZE){
+
+        chunk =  (chunk_header_t *) aux;
+
+        n += (1<<(chunk -> log2size)); 
+
+        if (chunk < first_chunk ||
+                chunk > first_chunk + MAX_CHUNK_SIZE ||
+                chunk -> magic_number != MAGIC_NUMBER || 
+                chunk -> log2size > MAX_CHUNK_LOG2_SIZE || 
+                chunk -> log2size < MIN_CHUNK_LOG2_SIZE || 
+                chunk -> div_code > MAX_CHUNK_LOG2_SIZE) return OS_ERROR;
+
+        if (chunk -> state_block == BLOCK_FREE){
+
+            chunk_r =  free_chunks_array [chunk -> log2size];
+            while (chunk_r != NULL && chunk_r != chunk) chunk_r = chunk_r -> next;   
+            /* ERROR, the chunk_r 
+             * must be the same than chunk
+             */
+            if (chunk_r == NULL) return OS_ERROR;
+
+            if (chunk_r -> next != NULL)
+                if (chunk_r -> next < first_chunk ||
+                        chunk_r -> next > first_chunk + MAX_CHUNK_SIZE ||
+                        chunk_r -> next -> magic_number != MAGIC_NUMBER ||
+                        chunk_r -> next -> state_block != BLOCK_FREE)
+                    return OS_ERROR;
+
+            if (chunk_r -> prev != NULL)
+                if (chunk_r -> prev < first_chunk ||
+                        chunk_r -> prev > first_chunk + MAX_CHUNK_SIZE ||
+                        chunk_r -> prev -> magic_number != MAGIC_NUMBER ||
+                        chunk_r -> prev -> state_block != BLOCK_FREE)
+                    return OS_ERROR;
+        } else {
+            frag = (chunk -> state_block == 0xFFFF)? 0 : chunk -> state_block;
+            if (frag > (1 << chunk -> log2size))
+                return OS_ERROR;
+        }
+        aux += (1 << chunk -> log2size);
+    } 
+    return OS_SUCCESS;
+}
+
+static void print_chunk(chunk_header_t *chunk){
+
+    PRINT_DBG_C ("MAGIC NUMBER 0x");
+    PRINT_DBG_H (chunk -> magic_number);
+    PRINT_DBG_C ("\nBLOCK 0x");
+    PRINT_DBG_H (chunk);
+    if (chunk -> state_block == BLOCK_FREE) {
+        PRINT_DBG_C ("\nFREE");
+    } else {
+        PRINT_DBG_C ("\nUSED\nFRAGMENTATION ");
+        if (chunk -> state_block == 0xFFFF){
+            PRINT_DBG_D (chunk -> state_block);
+        } else {
+            PRINT_DBG_D (chunk -> state_block);
+        }
+    }
+    PRINT_DBG_C ("\nLOG2 SIZE ");
+    PRINT_DBG_D (chunk -> log2size);
+    PRINT_DBG_C ("\nSIZE ");
+    PRINT_DBG_D ((1 << chunk -> log2size));
+    PRINT_DBG_C ("\nDIV CODE ");
+    PRINT_DBG_D (chunk -> div_code);
+    PRINT_DBG_C ("\n");
+    if (chunk -> state_block == BLOCK_FREE) 
+    {
+        PRINT_DBG_C ("PREV BLOCK 0x");
+        PRINT_DBG_H (chunk -> prev);
+        PRINT_DBG_C ("\nNEXT BLOCK 0x");
+        PRINT_DBG_H (chunk -> next);
+        PRINT_DBG_C ("\n");
+    }
+}
+
+#else
+
+void OS_MemStatus (void)
+{
+}
+
+Result_T OS_MemCheck (void)
+{
+    return OS_SUCCESS;
+}
+
+#endif // #ifdef CONFIG_OS_MEMMGR_DEBUG
+
+#else
+
+void OS_MemStatus (void)
+{
+}
+
+Result_T OS_MemCheck (void)
+{
+    return OS_SUCCESS;
+}
+
+void *OS_Malloc (size_t size)
+{
+    return malloc(size);
+}
+
+void OS_Free (void *ptr)
+{
+    free(ptr);
+}
+
+
+#endif  // CONFIG_OS_MEMMGR_ENABLE
+

@@ -1,0 +1,10 @@
+*.exe
+*d
+*.d
+linkmap
+*.prom
+tags
+samples/fpss
+samples/rofs
+samples/bli
+.git*

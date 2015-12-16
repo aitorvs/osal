@@ -1,0 +1,66 @@
+/* Automatically generated, don't edit */
+/* Generated on: rodano */
+/* At: Thu, 17 Dec 2009 09:35:48 +0000 */
+/* Linux version 2.6.31-16-generic (buildd@rothera) (gcc version 4.4.1 (Ubuntu 4.4.1-4ubuntu8) ) #53-Ubuntu SMP Tue Dec 8 04:01:29 UTC 2009 */
+
+/* Operating System Abstraction Layer */
+
+/* Operating System Selection */
+
+/* Operating System Configuration */
+#undef  CONFIG_LINUX
+#define CONFIG_RTEMS 1
+
+
+/* RTEMS Operating System */
+#define CONFIG_SPARC 1
+
+/* RTEMS Sparc */
+
+/* LEON configuration */
+#define CONFIG_LEON2 1
+#undef  CONFIG_LEON3
+
+#undef  CONFIG_RASTA
+
+
+
+
+/* OSAL configuration */
+#define CONFIG_OS_MEM_POOL_ENABLE 1
+#define CONFIG_OS_MEMMGR_ENABLE 1
+#define CONFIG_OSAL_INSTALL_ROOT "/home/aitor/osal"
+
+
+/* Operating System Resource Configuration */
+#define CONFIG_DEBUG 1
+#define CONFIG_ASSERT 1
+#undef  CONFIG_OS_STATIC_RESOURCE_ALLOCATION
+#undef  CONFIG_OS_ENABLE_FILESYSTEM
+#undef  CONFIG_OS_ENABLE_NETWORKING
+#define CONFIG_EXTRA_STACK_OVERHEAD 512
+#define CONFIG_EXTRA_MEMORY_OVERHEAD 512
+#define CONFIG_MAX_NUMBER_OF_TASKS 20
+#define CONFIG_MAX_NUMBER_OF_MONOTONIC_TASKS 20
+#define CONFIG_MAX_NUMBER_OF_SEMAPHORES 20
+#define CONFIG_MAX_NUMBER_OF_MUTEX 20
+#define CONFIG_MAX_NUMBER_OF_QUEUES 20
+#define CONFIG_MAX_NUMBER_OF_TIMERS 5
+#define CONFIG_MAX_NUMBER_OF_POOLS 5
+
+/* OSAL Memory Manager Configuration */
+#define CONFIG_MAX_MEMORY_MANAGER_POOL_LOG2_SIZE 20
+#define CONFIG_MAX_MEMORY_MANAGER_POOL_CHUNK_LOG2_SIZE 7
+#undef  CONFIG_OS_MEMMGR_DEBUG
+#undef  CONFIG_OS_MEMMGR_MANUAL_LINK
+
+
+
+/* Miscelaneous Configuration */
+#define CONFIG_HARDWARE_CLOCK_FREQ 80
+
+
+/* Derived symbols */
+#define CONFIG_ARCH "leon2"
+/* That's all, folks! */
+#define AUTOCONF_INCLUDED

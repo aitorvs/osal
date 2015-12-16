@@ -1,0 +1,337 @@
+/*
+ * File   : osfilesys.c
+ *
+ * Author : Nicholas Yanchik / NASA GSFC Code 582.0
+ * Author : Aitor Viana / ESA-ESTEC
+ * Purpose: 
+ *         This file  contains some of the OS APIs abstraction layer 
+ *         implementation for POSIX, specifically for Linux / Mac OS X.
+ */
+
+/*-----------------------------------------------------------------------------
+ * Changelog:
+ * 28/01/08 16:54:56
+ *  - The OS_mount and OS_mkfs functions has been implemented. This implementation
+ *   is the first one, and maybe it will need to be reinfed. For this implementation
+ *   some header files has been added, and some variables has been exported.
+ * 17/07/08 09:02:01
+ *  - Source code comments.
+ * 18/07/08 10:07:39
+ *  - Assertions added to the code.
+ *  - Minor modifications in the OS_mount and OS_mkfs functions trying to
+ *  make'em working.
+ *-----------------------------------------------------------------------------*/
+
+#include <osal/osapi.h>
+#include <osal/osdebug.h>
+#include <string.h>
+#include <rtems/bdbuf.h>
+#include <rtems/ramdisk.h>
+#include <rtems/fsmount.h>
+
+/*  This is needed due to the differences between RTEMS versions    */
+#if  (__GNUC__ > 3)
+#include    <rtems/dosfs.h>
+#else      /* -----  not (__GNUC__ < 3)  ----- */
+#include    <dosfs.h>
+#endif     /* -----  not (__GNUC__ < 3)  ----- */
+
+extern fstab_t OS_MountTable[NUM_TABLE_ENTRIES];
+extern OS_VolumeInfo_t OS_VolumeTable[NUM_TABLE_ENTRIES];
+
+/****************************************************************************************
+  GLOBAL DATA
+ ****************************************************************************************/
+int32_t OS_check_name_length(const char *path);
+int32_t OS_NameChange(char* name);
+
+/*-------------------------------------------------------------------------------------
+ * Name: OS_NameChange
+ * 
+ * Purpose: Because of the abstraction of the filesystem across OSes, we have to change
+ *          the name of the {file, directory, drive} to be what the OS can actually 
+ *          accept
+ ---------------------------------------------------------------------------------------*/
+int32_t OS_NameChange( char* name)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+    char LocalName [OS_MAX_PATH_LEN];
+    char newname [OS_MAX_PATH_LEN];
+    char devname [OS_MAX_PATH_LEN];
+    char filename[OS_MAX_PATH_LEN];
+    unsigned int NumChars;
+    int i=0;
+
+    ASSERT(name);
+
+    /* copy the name locally for good measure */
+    strcpy(LocalName,name);
+    /*printf("Local_path: $%s\n",LocalName);*/
+
+
+    /* we want to find the number of chars in to LocalName the second "/" is.
+     * Since we know the first one is in spot 0, we star looking at 1, and go until
+     * we find it.*/
+
+    NumChars=1;
+
+    while (strncmp (&LocalName[NumChars],"/",1) != 0)
+        NumChars++;
+
+    /* don't let it overflow to cause a segfault when trying to get the highest level
+     * directory */
+
+    if (NumChars >= strlen(LocalName))
+        NumChars = strlen(LocalName);
+
+    /* copy over only the part that is the device name */
+    strncpy(devname,LocalName,NumChars);
+
+    strncpy(filename,(LocalName + NumChars*sizeof(char)), strlen(LocalName) - NumChars+1);
+
+
+#if 0
+    printf("LocalName: %s\n",LocalName);
+    printf("strlen %d\n",strlen(LocalName));
+    printf("NumChars: %d\n",NumChars);
+    printf("name in: %s\n",LocalName);
+    printf("devname: %s\n",devname);
+    printf("filename: %s\n",filename);
+#endif
+
+    /* look for the dev name we found in the VolumeTable */
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (OS_VolumeTable[i].FreeFlag == FALSE && 
+                strncmp(OS_VolumeTable[i].MountPoint, devname,NumChars) == 0)
+        {
+            break;
+        }
+    }
+
+    /* Make sure we found a valid drive */
+    if (i >= NUM_TABLE_ENTRIES)
+        return OS_ERR_FS_DRIVE_NOT_CREATED;
+
+    /* copy over the physical first part of the drive */
+    strcpy(newname,OS_VolumeTable[i].PhysDevName);
+    /* concat that with the folder name */
+    strcat(newname,OS_VolumeTable[i].MountPoint);
+
+    strcat(newname, filename);
+    /* push it back to the caller */
+    strcpy(name,newname);
+    DEBUG("name = %s", name);
+
+    return OS_SUCCESS;
+#else
+    UNUSED(name);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+
+} /* end OS_NameChange*/
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_mount
+ *  Description:  This functions performs the filesystem mounting.
+ * =====================================================================================
+ */
+Result_T OS_mount (const char *devname, char* mountpoint)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+
+#if 0
+    ASSERT(mountpoint);
+    ASSERT(devname);
+
+    return OS_ERR_UNIMPLEMENTED;
+#endif
+
+    rtems_status_code rtems_status;
+    int i;
+
+    ASSERT(mountpoint);
+    ASSERT(devname);
+
+    if( mountpoint == NULL || devname == NULL )
+        return OS_ERR_INVALID_POINTER;
+
+    /*  Search for the device   */
+    for ( i = 0; i < NUM_TABLE_ENTRIES; ++i) 
+    {
+        if ( (strcmp(devname, OS_VolumeTable[i].DeviceName) == 0) && 
+                (OS_VolumeTable[i].FreeFlag == FALSE) )
+            break;
+    }
+
+    if ( i >= NUM_TABLE_ENTRIES )
+        return OS_FS_DEV_NOT_FOUND;
+
+    /*  Fill up the mount point  */
+    strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
+
+    /*  now we need to create a mount point. The hook to the ramdis filesystem. */
+    rtems_status = (rtems_status_code)rtems_fsmount( &OS_MountTable[i], 
+            1, /*sizeof(OS_MountTable)/sizeof(OS_MountTable[i]), */
+            NULL );
+
+    if ( rtems_status == RTEMS_SUCCESSFUL )
+        return OS_SUCCESS;
+    else
+        return OS_ERROR;
+#else
+    UNUSED(mountpoint);
+    UNUSED(devname);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_mkfs
+ *  Description:  This function creates a new file system.
+ *  Parameters:
+ *      - address:      Specifies the memory address where the file system will be
+ *      placed.
+ *      - devname:      FIXME[TBD]
+ *      - volname:      FIXME[TBD]
+ *      - blocksize:    file system block size
+ *      -numblocks:     Specifies the number of blocks the file system has.
+ *  Return:
+ *      OS_SUCCESS   when the file system has been created successfuly
+ *      OS_ERROR     when some error has occured
+ * =====================================================================================
+ */
+Result_T OS_mkfs (char *address, char *devname,char * volname, uint32_t blocksize, 
+        uint32_t numblocks)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+
+    msdos_format_request_param_t rqdata;
+    rtems_status_code status;
+    int i = 0;
+
+    ASSERT(address);
+    ASSERT(devname);
+    ASSERT(volname);
+    if( (NULL == address) || (NULL == devname) || (NULL == volname) )
+        return OS_ERR_INVALID_POINTER;
+
+    /*  find a FREE entry in the OS_VolumeTable structure  */
+    for ( i = 0; i < NUM_TABLE_ENTRIES; i++) 
+    {
+        if ( OS_VolumeTable[i].FreeFlag == TRUE )
+            break;
+    }
+
+    /*  There is no entry available in the OS_VolumeTable structure */
+    if ( i >= NUM_TABLE_ENTRIES )
+        return OS_FS_DEV_NOT_FOUND;
+
+    /*  Fill up the OS_VolumeTable entry  */
+    strcpy(OS_VolumeTable[i].DeviceName, devname);
+    strcpy(OS_VolumeTable[i].VolumeName, volname);
+    strcpy(OS_VolumeTable[i].PhysDevName, "");
+    rtems_ramdisk_configuration[i].block_size = blocksize;
+    rtems_ramdisk_configuration[i].block_num = numblocks;
+    rtems_ramdisk_configuration[i].location = (void*)address;
+
+    /*  We need to format the filesystem as well */
+    ASSERT( memset(&rqdata, 0, sizeof(rqdata)) );
+    rqdata.OEMName = "RTEMS";
+    rqdata.VolLabel = volname;
+    rqdata.fattype = MSDOS_FMT_FATANY;
+    rqdata.quick_format = TRUE;
+
+    DEBUG("Formating %s device", OS_VolumeTable[i].DeviceName);
+    status = msdos_format(OS_VolumeTable[i].DeviceName, &rqdata);
+    ASSERT( status == 0 );
+
+    if( status != 0 )
+    {
+        DEBUG("Error formating the new filesystem %s(%d) at 0x%x", OS_VolumeTable[i].DeviceName, i, rtems_ramdisk_configuration[i].location);
+        return OS_ERROR;
+    }
+
+    /*  Modify the Free flag in order to avoid future problems */
+    OS_VolumeTable[i].FreeFlag = FALSE;
+
+    DEBUG("New filesystem %s(%d) created at 0x%x", OS_VolumeTable[i].DeviceName, i, rtems_ramdisk_configuration[i].location);
+    return OS_SUCCESS;
+#else
+    UNUSED(address);
+    UNUSED(devname);
+    UNUSED(volname);
+    UNUSED(blocksize);
+    UNUSED(numblocks);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_unmount
+ *  Description:  This function implementes the unmount file system capability.
+ *  Parameters:
+ *      - mountpoint:   This parameters points to the mount point within the
+ *      file system.
+ *  Return:
+ *      - OS_ERR_UNIMPLEMENTED   The function is not yet implemented
+ * =====================================================================================
+ */
+Result_T OS_unmount (const char *mountpoint)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+    ASSERT(mountpoint);
+    return OS_ERR_UNIMPLEMENTED;
+#else
+    UNUSED(mountpoint);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_chkfs
+ *  Description:  This function checks the sanity of the file system.
+ *  Parameters:
+ *      - name:     This parameter specifies the file system name
+ *      - repair:   FIXME: TBD
+ *  Return:
+ *      - OS_ERR_UNIMPLEMENTED   The function is not yet implemented
+ * =====================================================================================
+ */
+os_fshealth_t OS_chkfs (const char *name, unsigned int repair)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+    UNUSED(repair);
+    ASSERT(name);
+    return OS_ERR_UNIMPLEMENTED;
+#else
+    UNUSED(repair);
+    UNUSED(name);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_fsBlockFree
+ *  Description:  FIXME: TBD
+ *  Return:
+ *      - OS_ERR_UNIMPLEMENTED   The function is not yet implemented
+ * =====================================================================================
+ */
+Result_T OS_fsBlocksFree (const char *name)
+{
+#if defined(CONFIG_OS_ENABLE_FILESYSTEM)
+    ASSERT(name);
+    return OS_ERR_UNIMPLEMENTED;
+#else
+    UNUSED(name);
+    return OS_ERR_NOT_SUPPORTED;
+#endif
+}    
+

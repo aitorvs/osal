@@ -1,0 +1,97 @@
+/* Automatically generated, don't edit */
+/* Generated on: rodano */
+/* At: Thu, 13 May 2010 11:38:20 +0000 */
+/* Linux version 2.6.31-20-generic (buildd@palmer) (gcc version 4.4.1 (Ubuntu 4.4.1-4ubuntu8) ) #58-Ubuntu SMP Fri Mar 12 05:23:09 UTC 2010 */
+
+/* Operating System Abstraction Layer */
+
+/* Operating System Selection */
+
+/* Operating System Configuration */
+#undef  CONFIG_LINUX
+#define CONFIG_RTEMS 1
+
+
+/* Linux Operating System */
+#undef  CONFIG_PC
+
+
+/* RTEMS Operating System */
+#define CONFIG_SPARC 1
+
+/* RTEMS Sparc */
+
+/* LEON configuration */
+#define CONFIG_LEON2 1
+#undef  CONFIG_LEON3
+
+#define CONFIG_RASTA 1
+
+/* RASTA configuration */
+#undef  CONFIG_RASTA_GAISLER_GRETH_ENABLE
+#define CONFIG_RASTA_GAISLER_GRSPW_ENABLE 1
+#define CONFIG_RASTA_GAISLER_GRCAN_ENABLE 1
+#undef  CONFIG_RASTA_GAISLER_OCCAN_ENABLE
+#define CONFIG_RASTA_GAISLER_B1553BRM_ENABLE 1
+#undef  CONFIG_RASTA_GAISLER_B1553RT_ENABLE
+#define CONFIG_RASTA_GAISLER_TMTC_ENABLE 1
+#undef  CONFIG_RASTA_GAISLER_APBUART_ENABLE
+#undef  CONFIG_MM6165D_DRIVER
+
+
+
+
+
+/* OSAL configuration */
+#define CONFIG_OS_MEM_POOL_ENABLE 1
+#define CONFIG_OS_MALLOC_DEBUG_LIB 1
+#define CONFIG_OSAL_INSTALL_ROOT "/opt/osal"
+
+
+/* Operating System Resource Configuration */
+#undef  CONFIG_DEBUG
+#undef  CONFIG_ASSERT
+#undef  CONFIG_OS_STATIC_RESOURCE_ALLOCATION
+#define CONFIG_OS_ENABLE_NETWORKING 1
+#define CONFIG_EXTRA_STACK_OVERHEAD 2480
+#define CONFIG_EXTRA_MEMORY_OVERHEAD 2048
+#define CONFIG_MAX_NUMBER_OF_TASKS 50
+#define CONFIG_MAX_NUMBER_OF_MONOTONIC_TASKS 50
+#define CONFIG_MAX_NUMBER_OF_SEMAPHORES 50
+#define CONFIG_MAX_NUMBER_OF_MUTEX 50
+#define CONFIG_MAX_NUMBER_OF_QUEUES 50
+#define CONFIG_MAX_NUMBER_OF_TIMERS 5
+#define CONFIG_MAX_NUMBER_OF_POOLS 5
+
+
+/* Miscelaneous Configuration */
+#define CONFIG_HARDWARE_CLOCK_FREQ 80
+
+
+/* File System Configuration */
+
+/* Shadow Paging File System */
+
+
+/* Block Layer Interface */
+
+/* Block Layer Interface RSP link Interface */
+
+
+/* Packet Store Configuration */
+#define CONFIG_OS_PACKET_STORE_NUMBER 2
+#define CONFIG_OS_PACKET_STORE_SIZE_MB 32
+
+
+/* Test Configuration */
+#define CONFIG_TEST_CORE_ENABLE 1
+#define CONFIG_TEST_MISC_ENABLE 1
+
+
+/* Derived symbols */
+#define CONFIG_PLATFORM "rasta"
+#define CONFIG_ARCH "leon2"
+#define CONFIG_OS_ENABLE_FILESYSTEM 1
+#define CONFIG_OS "rtems"
+/* That's all, folks! */
+#define AUTOCONF_INCLUDED

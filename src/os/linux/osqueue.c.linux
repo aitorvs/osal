@@ -1,0 +1,427 @@
+/**
+ *  \file   osqueue.c
+ *  \brief  This file features the queue implementation for the OSAL library
+ *  under Linux OS
+ *
+ *  Detailed description starts here.
+ *
+ *  \author  Aitor Viana Sanchez (avs), Aitor.Viana.Sanchez@esa.int
+ *
+ *  \internal
+ *    Created:  11/25/2009
+ *   Revision:  $Id: osqueue.c 1.4 11/25/2009 avs Exp $
+ *   Compiler:  gcc/g++
+ *    Company:  European Space Agency (ESA-ESTEC)
+ *  Copyright:  Copyright (c) 2009, Aitor Viana Sanchez
+ *
+ *  This source code is released for free distribution under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation.
+ * =====================================================================================
+ */
+
+/*
+** File   : osapi.c
+**
+** Author : Alan Cudmore
+**
+** Purpose: 
+**         This file  contains some of the OS APIs abstraction layer 
+**         implementation for POSIX, specifically for Linux / Mac OS X.
+**
+*/
+
+
+#include <osal/osapi.h>
+#include <osal/osstats.h>
+#include <public/lock.h>
+
+#include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <mqueue.h>
+#include <osal/osdebug.h>
+
+#define INIT_THREAD_MUTEX() \
+    do{ \
+        int ret;    \
+        ret = lock_rw_init(&_rwlock);   \
+        ASSERT( ret >= 0 ); \
+    }while(0);
+
+
+#define WLOCK()   __WLOCK()
+#define WUNLOCK() __WUNLOCK()
+
+#define CRITICAL(x) \
+    WLOCK();    \
+    {   \
+        x;  \
+    }   \
+    WUNLOCK();
+
+#define _IS_QUEUE_INIT()   \
+{   \
+    if( !_queue_is_init ) \
+    { \
+        _os_queue_init(); \
+        _queue_is_init = 1; \
+    } \
+}
+#define _CHECK_QUEUE_INIT()  (_IS_QUEUE_INIT())
+
+/** This variable flags whether the queue class has been yet initialized or not
+ */
+static uint8_t _queue_is_init = 0;
+
+/* queues */
+typedef struct
+{
+    int free;
+    int mul_Creator;
+    mqd_t id;
+    char name[5];
+    int32_t is_blocking;
+}OS_queue_record_t;
+
+LOCAL OS_queue_record_t   OS_queue_table         [OS_MAX_QUEUES];
+/** this is the Initial name for the tasks  */
+LOCAL char queue_name[] = "00000";
+
+/* 
+ * ===  MACRO  ======================================================================
+ *         Name:  NEXT_RESOURCE_NAME
+ *  Description:  This MACRO gets the next resource name which will be used
+ *  during the resorce creation process.
+ * =====================================================================================
+ */
+#define RESOURCE_NAME(c1, c2, c3, c4)  \
+                 if (c4 == '9') {       \
+                   if (c3 == '9') {     \
+                     if (c2 == 'z') {   \
+                       if (c1 == 'z') { \
+                         printf("not enough task letters for names !!!\n"); \
+                         exit( 1 );     \
+                       } else           \
+                         c1++;          \
+                       c2 = 'a';        \
+                     } else             \
+                      c2++;             \
+                     c3 = '0';          \
+                   } else               \
+                     c3++;              \
+                   c4 = '0';            \
+                 }                      \
+                 else                   \
+                   c4++                 \
+
+static void _os_queue_init(void)
+{
+    int i;
+
+    STATS_INIT_QUEUE();
+
+    /* Initialize Message Queue Table */
+
+    for(i = 0; i < OS_MAX_QUEUES; i++)
+    {
+        OS_queue_table[i].free        = TRUE;
+        OS_queue_table[i].id          = UNINITIALIZED;
+        OS_queue_table[i].mul_Creator     = UNINITIALIZED;
+        OS_queue_table[i].is_blocking = UNINITIALIZED;
+    }
+
+    INIT_THREAD_MUTEX();
+}
+
+/****************************************************************************************
+  MESSAGE QUEUE API
+ ****************************************************************************************/
+
+
+
+Result_T OS_QueueCreate (
+        uint32_t *queue_id, 
+        uint32_t queue_depth,
+        uint32_t data_size, 
+        uint32_t flags)
+{
+    uint32_t possible_qid;
+    struct mq_attr queue_attr;
+
+    _CHECK_QUEUE_INIT();
+
+    if ( (queue_id == NULL) )
+        return OS_STATUS_EINVAL;
+    if( (queue_depth == 0) || (data_size == 0) )
+        return OS_STATUS_QUEUE_INVALID_SIZE;
+
+    /* Check Parameters */
+
+    WLOCK();
+    {
+
+        for(possible_qid = 0; possible_qid < OS_MAX_QUEUES; possible_qid++)
+        {
+            if (OS_queue_table[possible_qid].free == TRUE)
+                break;
+        }
+
+        if( possible_qid >= OS_MAX_QUEUES || OS_queue_table[possible_qid].free != TRUE)
+        {
+            WUNLOCK();
+            return OS_STATUS_NO_FREE_IDS;
+        }
+
+        /* Set the possible task Id to not free so that
+         * no other task can try to use it */
+        OS_queue_table[possible_qid].free = FALSE;
+    }
+    WUNLOCK();
+
+    /*  Create the Linux message queue  */
+    RESOURCE_NAME(queue_name[1],queue_name[2],queue_name[3],queue_name[4]);
+    queue_name[0] = '/';
+    queue_attr.mq_maxmsg = queue_depth;
+    queue_attr.mq_msgsize = data_size;
+
+    if( flags == OS_NONBLOCKING )
+    {
+        OS_queue_table[possible_qid].id = 
+            mq_open(queue_name, O_CREAT | O_RDWR | O_EXCL | O_NONBLOCK, 0600, &queue_attr);
+    }
+    else
+    {
+        OS_queue_table[possible_qid].id = 
+            mq_open(queue_name, O_CREAT | O_RDWR | O_EXCL, 0600, &queue_attr);
+    }
+
+//    ASSERT( OS_queue_table[possible_qid].id >= 0 );
+    if( OS_queue_table[possible_qid].id < 0 )
+    {
+        WLOCK();
+        OS_queue_table[possible_qid].free = TRUE;
+        WUNLOCK();
+
+        DEBUG("Error creating queue %s", queue_name);
+        perror("");
+
+        return OS_STATUS_ERROR;
+    }
+
+    /*
+     ** store socket handle
+     */
+    *queue_id = possible_qid;
+
+    WLOCK();
+    {
+        OS_queue_table[*queue_id].free = FALSE;
+        OS_queue_table[*queue_id].mul_Creator = OS_TaskGetId();
+        strcpy(OS_queue_table[*queue_id].name, queue_name);
+        OS_queue_table[*queue_id].is_blocking = (flags == OS_BLOCKING) ? flags : OS_NONBLOCKING;
+
+        /*  Stats   */
+        STATS_CREAT_QUEUE();
+    }
+    WUNLOCK();
+
+    return OS_STATUS_SUCCESS;
+
+}/* end OS_QueueCreate */
+
+
+Result_T OS_QueueDelete (uint32_t queue_id)
+{
+    _CHECK_QUEUE_INIT();
+
+#if defined (CONFIG_OS_STATIC_RESOURCE_ALLOCATION)
+    return OS_NOT_SUPPORTED;
+#else
+    /* Check to see if the queue_id given is valid */
+
+    if (queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    /* Try to delete the queue */
+
+    if(mq_close(OS_queue_table[queue_id].id) !=0)   
+    {
+        return OS_STATUS_ERROR;
+    }
+    if(mq_unlink(OS_queue_table[queue_id].name) !=0)   
+    {
+        return OS_STATUS_ERROR;
+    }
+
+    /* 
+     * Now that the queue is deleted, remove its "presence"
+     * in OS_message_q_table and OS_message_q_name_table 
+     */
+
+    WLOCK();
+    {
+        OS_queue_table[queue_id].free = TRUE;
+        OS_queue_table[queue_id].mul_Creator = UNINITIALIZED;
+
+        /*  Stats   */
+        STATS_DEL_QUEUE();
+    }
+    WUNLOCK();
+
+
+    return OS_STATUS_SUCCESS;
+#endif
+
+} /* end OS_QueueDelete */
+
+Result_T OS_QueueGet (
+        uint32_t queue_id, 
+        void *data, 
+        uint32_t size, 
+        size_t *size_copied, 
+        int32_t timeout)
+{
+
+    int32_t ret;
+    uint32_t prio;
+
+    _CHECK_QUEUE_INIT();
+
+    /*
+     ** Check Parameters 
+     */
+    /* Check Parameters */
+
+    if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+    if( (data == NULL) || (size_copied == NULL) )
+        return OS_STATUS_EINVAL;
+    if(size == 0)
+        return OS_STATUS_QUEUE_INVALID_SIZE;
+
+    *size_copied = 0;
+    if( timeout > 0 )
+    {
+        struct timespec ts;
+
+        ASSERT( timeout > 0 );
+        if( timeout <= 0 ) return OS_STATUS_EINVAL;
+
+        ts.tv_sec = timeout / 1000;
+        ts.tv_nsec = (timeout % 1000) * 1000000;
+
+        ret = mq_timedreceive(OS_queue_table[queue_id].id, data, size, &prio, &ts);
+        if( ret < 0 )
+        {
+            if( errno == ETIMEDOUT )
+            {
+                return OS_STATUS_QUEUE_TIMEOUT;
+            }
+            else
+            {
+                perror("Receiving message error");
+                return OS_STATUS_ERROR;
+            }
+        }
+
+        if(ret != (int)size )
+        {
+            *size_copied = ret;
+            DEBUG("wrong size");
+        }
+        else
+        {
+            *size_copied = ret;
+            return OS_STATUS_SUCCESS;
+        }
+    }
+    else
+    {
+        ret = mq_receive(OS_queue_table[queue_id].id, data, size, &prio);
+        if( ret < 0 )
+        {
+            perror("Receiving message error");
+            return OS_STATUS_ERROR;
+        }
+        else if(ret != (int)size )
+        {
+            *size_copied = ret;
+            DEBUG("wrong size");
+        }
+        else
+        {
+            /*  Message received    */
+            *size_copied = ret;
+            return OS_STATUS_SUCCESS;
+        }
+    }
+
+    return OS_STATUS_SUCCESS;
+
+} /* end OS_QueueGet */
+
+Result_T OS_QueuePut (uint32_t queue_id, void *data, uint32_t size, uint32_t prio)
+{
+    int32_t ret;
+
+    _CHECK_QUEUE_INIT();
+
+    /*
+     ** Check Parameters 
+     */
+    if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    ASSERT(data);
+    ASSERT(size);
+
+    if (data == NULL)
+        return OS_STATUS_EINVAL;
+    if(size == 0)
+        return OS_STATUS_QUEUE_INVALID_SIZE;
+
+    /*  Sending the messate */
+    ret = mq_send(OS_queue_table[queue_id].id, data, size, (prio%OS_QUEUE_MSG_URGENT));
+    if( ret < 0 )
+    {
+        perror("Sending message error");
+        return OS_STATUS_ERROR;
+    }
+
+    return OS_STATUS_SUCCESS;
+} /* end OS_QueuePut */
+
+
+Result_T OS_QueueGetInfo (uint32_t queue_id, OS_queue_prop_t *queue_prop)  
+{
+    _CHECK_QUEUE_INIT();
+
+    /* Check to see that the id given is valid */
+
+    if (queue_prop == NULL)
+        return OS_STATUS_EINVAL;
+
+    if (queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+        return OS_STATUS_EINVAL;
+
+    /* put the info into the stucture */
+    WLOCK();
+    {
+        queue_prop -> mul_Creator =   OS_queue_table[queue_id].mul_Creator;
+    }
+    WUNLOCK();
+
+
+    return OS_STATUS_SUCCESS;
+
+} /* end OS_QueueGetInfo */
+
+

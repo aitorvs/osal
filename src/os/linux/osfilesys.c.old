@@ -1,0 +1,345 @@
+/*
+ * File   : osfileapi.c
+ *
+ * Author : Nicholas Yanchik / NASA GSFC Code 582.0
+ * Modifications/enhanced : Aitor Viana / ESA-ESTEC
+ * Purpose: 
+ *         This file  contains some of the OS APIs abstraction layer 
+ *         implementation for POSIX, specifically for Linux / Mac OS X.
+ *
+ */
+
+/****************************************************************************************
+                                    INCLUDE FILES
+****************************************************************************************/
+
+#include "osal/osapi.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <assert.h>
+
+#include <dirent.h>
+#include <sys/stat.h>
+
+#include <sys/vfs.h>
+
+/****************************************************************************************
+                                     DEFINES
+****************************************************************************************/
+
+# define ERROR (-1)
+
+
+/****************************************************************************************
+                                   GLOBAL DATA
+****************************************************************************************/
+
+//Result_T OS_NameChange(char* name);
+
+/* 
+** This is the volume table reference. It is defined in the BSP/startup code for the board
+*/
+extern OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES]; 
+
+/****************************************************************************************
+                                Filesys API
+****************************************************************************************/
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_mkfs()
+ *  Description:  This function makes a RMA disk on the target DOS type
+ *  formated.
+ *  Parameters:
+ *      - address:      This is the address where the filesystem will be placed. Not
+ *      used in Linux/
+ *      - devname:      This is the device name we want to format and mount.
+ *      - volname:      This is the mountpoint.
+ *      - blocksize:    This is the block size used for the formatting.
+ *      - numblocks:    Number of blocks in the file system.
+ *  Return:
+ *      OS_SUCCESS when the call success
+ *      OS_ERROR when an unknown error occur.
+ *      OS_FS_DEV_NOT_FOUND when there is no more space for another file system
+ *
+ * =====================================================================================
+ */
+Result_T OS_mkfs (char *address, char *devname,char * volname, uint32_t blocksize, 
+               uint32_t numblocks)
+{
+    UNUSED(address);
+    UNUSED(numblocks);
+    int i;
+    char Command[ OS_MAX_PATH_LEN +6 ];
+    char FolderName[OS_MAX_PATH_LEN];
+
+    assert(address);
+    assert(devname);
+    assert(volname);
+    
+    /* find an open entry in the Volume Table */
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (    (OS_VolumeTable[i].FreeFlag == TRUE) && 
+                OS_VolumeTable[i].IsMounted == FALSE )
+        {
+            break;
+        }
+    }
+
+    if (i >= NUM_TABLE_ENTRIES)
+        return OS_FS_DEV_NOT_FOUND;
+
+
+    /* make a disk if it is FS based */
+    /*------------------------------- */
+    if (OS_VolumeTable[i].VolumeType == FS_BASED)
+    {
+
+       /* now enter the info in the table */
+
+       OS_VolumeTable[i].FreeFlag = FALSE;
+       strcpy(OS_VolumeTable[i].VolumeName, volname);
+       OS_VolumeTable[i].BlockSize = blocksize;
+    
+       /* note we don't know the mount point yet */
+    
+       /* for linux/osx we need to make the folder where this drive is located */
+//       strcpy(FolderName, OS_VolumeTable[i].PhysDevName);
+//       strcat(FolderName, devname);
+       strcpy(FolderName, volname);
+       strcpy(OS_VolumeTable[i].DeviceName, devname);
+
+       /*   FIXME: Nothing is doing with the PhysDevName. Before we created the
+        *   file but I really do not see the point now  */
+    
+       /* make the directory where the file system lives */
+       sprintf(Command,"mkdir %s", FolderName);
+       system(Command);
+       
+    }   /* VolumeType is something else that is not supported right now */
+    else
+    {
+        return OS_ERROR;
+    }
+
+   return OS_SUCCESS; 
+    
+    
+} /* end OS_mkfs */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_mount()
+ *  Description:  this function mounts a file system
+ *  Parameters:
+ *      - devname:  This is the device to be mounted. The device shall be
+ *      formatted already.
+ *      - mountpoint:   This is the mount point.
+ *  Return:
+ *      - OS_SUCCESS when the call success.
+ *      - OS_ERR_FS_DRIVE_NOT_CREATED where the device has not been formated
+ *      before. OS_mkfs() call shall be performed before.
+ * =====================================================================================
+ */
+Result_T OS_mount (const char *devname, char* mountpoint)
+{
+   int i;
+   /* find the device in the table */
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (OS_VolumeTable[i].FreeFlag == FALSE && OS_VolumeTable[i].IsMounted == FALSE
+            && strcmp(OS_VolumeTable[i].DeviceName, devname) == 0)
+            break;
+    }
+
+    /* make sure we found the device */
+    if (i >= NUM_TABLE_ENTRIES)
+        return OS_ERR_FS_DRIVE_NOT_CREATED;
+
+    /* attach the mountpoint */
+    strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
+    OS_VolumeTable[i].IsMounted = TRUE;
+
+    return OS_SUCCESS;
+}/* end OS_mount */
+
+/*--------------------------------------------------------------------------------------
+    Name: OS_unmount
+    
+    Purpose: unmounts a drive. and therefore makes all file descriptors pointing into
+             the drive obsolete.
+
+    Returns: OS_ERR_INVALID_POINTER if name is NULL
+             OS_ERR_FS_PATH_TOO_LONG if the absolute path given is too long
+             OS_ERROR if the OS calls failed
+             OS_SUCCESS if success
+---------------------------------------------------------------------------------------*/
+
+Result_T OS_unmount (const char *mountpoint)
+{
+    int i;
+    
+    if (mountpoint == NULL)
+        return OS_ERR_INVALID_POINTER;
+
+    if (strlen(mountpoint) > OS_MAX_PATH_LEN)
+        return OS_ERR_FS_PATH_TOO_LONG;
+
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (OS_VolumeTable[i].FreeFlag == FALSE && OS_VolumeTable[i].IsMounted == TRUE
+             && strcmp(OS_VolumeTable[i].MountPoint, mountpoint) == 0)
+            break;
+    }
+
+    /* make sure we found the device */
+    if (i >= NUM_TABLE_ENTRIES)
+        return OS_ERROR;
+
+    /* release the informationm from the table */
+   OS_VolumeTable[i].IsMounted = FALSE;
+   strcpy(OS_VolumeTable[i].MountPoint, "");
+    
+    return OS_SUCCESS;
+    
+}/* end OS_umount */
+
+/*--------------------------------------------------------------------------------------
+    Name: OS_fsBlocksFree
+
+    Purpose: Returns the number of free blocks in a volume
+ 
+    Returns: OS_FS_INVALID_POINTER if name is NULL
+             OS_ERROR if the OS call failed
+             The number of bytes free in a volume if success
+---------------------------------------------------------------------------------------*/
+
+
+Result_T OS_fsBlocksFree (const char *name)
+{
+
+   int           status;
+   struct statfs stat_buf;
+   char          tmpFileName[128];
+   
+   if ( name == NULL )
+   {
+      return(OS_ERR_INVALID_POINTER);
+   }
+   strncpy(tmpFileName,name,128);
+//   NameStatus = OS_NameChange(tmpFileName);
+   status = statfs(tmpFileName, &stat_buf);
+   
+   if ( status == 0 )
+   {
+      return(stat_buf.f_bfree);
+   }
+   return OS_ERROR;
+
+}/* end OS_fsBlocksFree */
+
+/*--------------------------------------------------------------------------------------
+    Name: OS_chkfs
+    
+    Purpose: Checks the drives for inconsisenties and either repairs it or not
+
+    Returns: OS_ERR_INVALID_POINTER if name is NULL
+             OS_SUCCESS if success
+             OS_ERROR if the OS calls fail
+
+---------------------------------------------------------------------------------------*/
+os_fshealth_t OS_chkfs (const char *name, unsigned int repair)
+{ 
+    UNUSED(name);
+    UNUSED(repair);
+    assert(name);
+
+/* LOOK INTO USING e2fsck TO CHECK THE FILE SYSTEM !!! */
+    return OS_ERR_UNIMPLEMENTED;
+}/* end OS_chkfs */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  OS_NameChange()
+ *  Description:  FIXME: Not used anymore.
+ * =====================================================================================
+ */
+#if 0
+Result_T OS_NameChange( char* name)
+{
+    char LocalName [OS_MAX_PATH_LEN];
+    char newname [OS_MAX_PATH_LEN];
+    char devname [OS_MAX_PATH_LEN];
+    char filename[OS_MAX_PATH_LEN];
+    unsigned int NumChars;
+    int i=0;
+   
+    /* copy the name locally for good measure */
+    strcpy(LocalName,name);
+
+    
+    /* we want to find the number of chars in to LocalName the second "/" is.
+     * Since we know the first one is in spot 0, we star looking at 1, and go until
+     * we find it.*/
+    
+    NumChars=1;
+    
+    while (strncmp (&LocalName[NumChars],"/",1) != 0)
+        NumChars++;
+    
+    /* don't let it overflow to cause a segfault when trying to get the highest level
+     * directory */
+    
+    if (NumChars >= strlen(LocalName))
+            NumChars = strlen(LocalName);
+  
+    /* copy over only the part that is the device name */
+    strncpy(devname,LocalName,NumChars);
+    
+    strncpy(filename,(LocalName + NumChars*sizeof(char)), strlen(LocalName) - NumChars+1);
+    
+//    printf("LocalName: %s\n",LocalName);
+//    printf("strlen %d\n",strlen(LocalName));
+//    printf("NumChars: %d\n",NumChars);
+//    printf("name in: %s\n",LocalName);
+//    printf("devname: %s\n",devname);
+//    printf("filename: %s\n",filename);
+   
+    /* look for the dev name we found in the VolumeTable */
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (OS_VolumeTable[i].FreeFlag == FALSE && 
+            strncmp(OS_VolumeTable[i].MountPoint, devname,NumChars) == 0)
+        {
+            break;
+        }
+    }
+
+    /* Make sure we found a valid drive */
+    if (i >= NUM_TABLE_ENTRIES)
+        return OS_ERR_FS_DRIVE_NOT_CREATED;
+    
+    /* copy over the physical first part of the drive */
+    strcpy(newname,OS_VolumeTable[i].PhysDevName);
+    /* concat that with the file name */
+    strcat(newname,OS_VolumeTable[i].DeviceName);
+
+    strcat(newname, filename);
+    /* push it back to the caller */
+    strcpy(name,newname);
+    
+    return OS_SUCCESS;
+    
+} /* end OS_NameChange*/
+
+#endif
+
+
