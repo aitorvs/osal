@@ -19,6 +19,9 @@ Dependencies:
   - ncurses-bin, v5.6
 
 
+The library is documented using `doxygen`. Just generate the documentation and
+check the API.
+
 ## Installation
 
 Configure and install the library with the following commands
